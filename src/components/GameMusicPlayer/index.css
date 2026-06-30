@@ -1,0 +1,930 @@
+.iphone-device-frame {
+  position: relative;
+  width: min(100%, 368px);
+  aspect-ratio: 433 / 882;
+  margin: 0 auto;
+  filter: drop-shadow(0 34px 88px rgba(0, 0, 0, 0.42));
+}
+
+.iphone-screen-slot {
+  position: absolute;
+  z-index: 1;
+  left: calc(4.91% - 1px);
+  top: calc(2.18% - 1px);
+  width: calc(89.95% + 2px);
+  height: calc(95.63% + 2px);
+  overflow: hidden;
+  border-radius: 14.31% / 6.61%;
+  background: #020202;
+}
+
+.magic-iphone-svg {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transform: translateZ(0);
+}
+
+.magic-iphone-outer,
+.magic-iphone-button {
+  fill: #2d2e30;
+}
+
+.magic-iphone-inner {
+  fill: #020202;
+}
+
+.magic-iphone-highlight {
+  display: none;
+}
+
+.magic-iphone-screen-rim {
+  display: none;
+}
+
+.magic-iphone-island {
+  fill: #000;
+}
+
+.iphone-power-hotspot {
+  position: absolute;
+  z-index: 4;
+  top: 31.6%;
+  right: -5.2%;
+  width: 13%;
+  height: 13%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.iphone-power-hotspot::before {
+  position: absolute;
+  top: 0;
+  right: 34%;
+  width: 7px;
+  height: 100%;
+  content: "";
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0);
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.iphone-power-hotspot:hover::before {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 10px rgba(255, 236, 244, 0.24);
+  transform: translateX(-1px);
+}
+
+.iphone-power-cursor {
+  position: absolute;
+  top: 26%;
+  left: 94%;
+  width: 20px;
+  height: 20px;
+  opacity: 0;
+  transform: translate3d(8px, -8px, 0) rotate(-68deg);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+  pointer-events: none;
+}
+
+.iphone-power-cursor::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  clip-path: polygon(
+    0 0,
+    0 18px,
+    5px 13px,
+    8px 20px,
+    11px 18px,
+    8px 11px,
+    15px 11px
+  );
+  background: #fff;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.7))
+    drop-shadow(0 0 1px rgba(0, 0, 0, 0.9));
+}
+
+.iphone-power-hotspot:hover .iphone-power-cursor,
+.iphone-power-hotspot:focus-visible .iphone-power-cursor {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) rotate(-68deg);
+}
+
+.iphone-power-hotspot:focus-visible {
+  outline: 0;
+}
+
+.iphone-power-hotspot:active::before {
+  transform: translateX(1px) scaleX(0.72);
+}
+
+.game-player-shell {
+  --player-ink: #fff;
+  --player-muted: rgba(255, 255, 255, 0.58);
+  --game-bg-primary: rgb(113, 48, 54);
+  --game-bg-secondary: rgb(129, 36, 79);
+  --game-bg-accent: rgb(214, 144, 86);
+  --game-bg-deep: rgb(21, 7, 19);
+  --game-bg-glow: rgba(214, 144, 86, 0.24);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: 15px 24px 17px;
+  border-radius: inherit;
+  color: var(--player-ink);
+  letter-spacing: 0;
+  background: var(--game-bg-deep);
+}
+
+.game-player-shell.is-screen-off {
+  background: #020202;
+}
+
+.game-player-shell.is-screen-off .game-bg-layer,
+.game-player-shell.is-screen-off .game-player-noise {
+  opacity: 0;
+}
+
+.game-bg-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at 16% 9%,
+      color-mix(in srgb, var(--game-bg-accent) 52%, transparent),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 78% 16%,
+      color-mix(in srgb, var(--game-bg-secondary) 58%, transparent),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 52% 68%,
+      color-mix(in srgb, var(--game-bg-primary) 56%, transparent),
+      transparent 48%
+    ),
+    linear-gradient(
+      180deg,
+      var(--game-bg-primary) 0%,
+      var(--game-bg-secondary) 48%,
+      var(--game-bg-deep) 100%
+    );
+}
+
+.game-bg-layer::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background:
+    radial-gradient(ellipse at 24% 20%, var(--game-bg-glow), transparent 31%),
+    radial-gradient(
+      ellipse at 76% 45%,
+      color-mix(in srgb, var(--game-bg-secondary) 42%, transparent),
+      transparent 34%
+    ),
+    radial-gradient(
+      ellipse at 44% 82%,
+      color-mix(in srgb, var(--game-bg-accent) 16%, transparent),
+      transparent 38%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.045),
+      transparent 28%,
+      rgba(255, 255, 255, 0.03) 62%,
+      transparent
+    );
+  filter: blur(24px) saturate(1.02);
+  opacity: 0.78;
+}
+
+.game-bg-layer-previous {
+  animation: game-bg-fade-out 620ms ease forwards;
+}
+
+@keyframes game-bg-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.game-player-shell::after {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  content: "";
+  border-radius: inherit;
+  background: #020202;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms ease;
+}
+
+.game-player-shell.is-screen-off::after {
+  opacity: 1;
+}
+
+.game-player-noise {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.12;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 18%,
+    black 82%,
+    transparent
+  );
+}
+
+.game-status-bar,
+.game-home-indicator,
+.game-player-content,
+.game-progress-area,
+.game-control-row,
+.game-volume-area,
+.game-bottom-nav {
+  position: relative;
+  z-index: 2;
+}
+
+.game-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  padding: 0 6px;
+}
+
+.game-status-time {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 760;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.game-status-icons {
+  position: absolute;
+  top: 50%;
+  right: 0px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  transform: translateY(-50%);
+}
+
+.game-home-indicator {
+  width: 58px;
+  height: 4px;
+  margin: 13px auto 18px;
+  border-radius: 999px;
+  background: rgba(255, 214, 225, 0.48);
+}
+
+.game-dynamic-island {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 86px;
+  height: 26px;
+  border-radius: 999px;
+  background: #000;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+.game-player-content {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.game-cover-motion {
+  position: absolute;
+  top: 0;
+  left: -6px;
+  z-index: 2;
+  width: calc(100% + 12px);
+  transform: translate3d(0, 0, 0) scale(1);
+  transform-origin: top left;
+  transition:
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 260ms ease;
+  will-change: transform;
+}
+
+.game-player-review .game-cover-motion,
+.game-player-list .game-cover-motion {
+  transform: translate3d(0, 0, 0) scale(0.185);
+}
+
+.game-player-review .game-cover-motion .game-cover,
+.game-player-list .game-cover-motion .game-cover {
+  border-radius: 40px;
+}
+
+.game-home-panel,
+.game-compact-header,
+.game-mode-panel {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 320ms ease,
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.game-home-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: 30px;
+  transform: translate3d(0, 18px, 0);
+}
+
+.game-mode-panel {
+  z-index: 3;
+  padding-top: 50px;
+  transform: translate3d(0, 36px, 0);
+}
+
+.game-compact-header {
+  z-index: 4;
+  bottom: auto;
+  height: 58px;
+  transform: translate3d(0, 34px, 0);
+}
+
+.game-home-panel.is-active,
+.game-compact-header.is-active,
+.game-mode-panel.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate3d(0, 0, 0);
+}
+
+.game-home-panel.is-active {
+  transition-delay: 80ms;
+}
+
+.game-mode-panel.is-active {
+  transition-delay: 120ms;
+}
+
+.game-player-review .game-compact-header.is-active,
+.game-player-list .game-compact-header.is-active {
+  transition-delay: 80ms;
+}
+
+.game-player-review .game-cover,
+.game-player-list .game-cover {
+  border-radius: 18px;
+}
+
+.game-cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 12px;
+  background:
+    radial-gradient(
+      circle at 28% 18%,
+      rgba(255, 255, 255, 0.16),
+      transparent 26%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.15),
+      rgba(255, 255, 255, 0.035)
+    );
+  box-shadow: 0 14px 28px rgba(20, 3, 15, 0.27);
+}
+
+.game-cover img,
+.game-cover-empty {
+  width: 100%;
+  height: 100%;
+}
+
+.game-cover img {
+  display: block;
+  object-fit: cover;
+}
+
+.game-cover-empty {
+  background:
+    radial-gradient(
+      circle at 22% 18%,
+      rgba(255, 255, 255, 0.18),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 72% 82%,
+      rgba(255, 255, 255, 0.08),
+      transparent 34%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.16),
+      rgba(255, 255, 255, 0.035)
+    );
+}
+
+.game-cover-compact {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 58px;
+  border-radius: 8px;
+  box-shadow: 0 9px 18px rgba(13, 2, 11, 0.24);
+}
+
+.game-cover-compact-spacer {
+  width: 58px;
+  height: 58px;
+}
+
+.game-title-row {
+  display: grid;
+  grid-template-columns: 1fr 31px 31px;
+  gap: 7px;
+  align-items: center;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.game-track-copy {
+  min-width: 0;
+}
+
+.game-track-title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 7px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1.08;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-track-title.compact {
+  font-size: 14px;
+}
+
+.game-track-subtitle {
+  margin-top: 4px;
+  color: var(--player-muted);
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.18;
+}
+
+.game-round-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.11);
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.game-round-action:hover,
+.game-bottom-nav button:hover,
+.game-control-row button:hover {
+  transform: translateY(-1px);
+}
+
+.game-round-action.is-liked,
+.game-bottom-nav button.is-liked {
+  color: #ffdee9;
+}
+
+.game-review-panel,
+.game-list-panel {
+  min-height: 100%;
+}
+
+.game-compact-now {
+  display: grid;
+  grid-template-columns: 58px 1fr 31px 31px;
+  gap: 6px;
+  align-items: center;
+}
+
+.game-compact-now > div {
+  min-width: 0;
+}
+
+.game-review-copy {
+  position: relative;
+  min-height: 296px;
+  padding-top: 70px;
+}
+
+.game-review-kicker {
+  margin: 0 0 12px;
+  color: rgba(255, 255, 255, 0.27);
+  font-size: 15px;
+  font-weight: 800;
+  filter: blur(4px);
+}
+
+.game-review-main {
+  max-height: 178px;
+  margin: 0;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 23px;
+  font-weight: 850;
+  line-height: 1.3;
+}
+
+.game-review-ghost {
+  max-width: 92%;
+  margin: 42px 0 0;
+  color: rgba(255, 255, 255, 0.12);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.25;
+  filter: blur(4px);
+}
+
+.game-mode-chips {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 11px;
+  margin-top: 20px;
+  margin-bottom: 14px;
+}
+
+.game-mode-chips span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  border-radius: 20px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.game-mode-chips span.active {
+  color: rgba(88, 71, 79, 0.88);
+  background: rgba(233, 228, 229, 0.82);
+}
+
+.game-list-heading {
+  margin-top: 14px;
+}
+
+.game-list-heading h4,
+.game-list-heading p {
+  margin: 0;
+}
+
+.game-list-heading h4 {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.game-list-heading p {
+  margin-top: -1px;
+  color: var(--player-muted);
+  font-size: 11px;
+}
+
+.game-library-list {
+  --library-row-size: 42px;
+  --library-row-gap: 7px;
+  --library-visible-rows: 4.4;
+  --library-bottom-fade: 50px;
+  position: relative;
+  box-sizing: border-box;
+  display: grid;
+  gap: var(--library-row-gap);
+  margin-top: 10px;
+  height: calc(
+    (var(--library-row-size) * var(--library-visible-rows)) +
+      (var(--library-row-gap) * 3)
+  );
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 2px;
+  padding-bottom: var(--library-bottom-fade);
+  cursor: grab;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 10px,
+    #000 calc(100% - var(--library-bottom-fade)),
+    transparent 100%
+  );
+}
+
+.game-library-list:active {
+  cursor: grabbing;
+}
+
+.game-library-list::-webkit-scrollbar {
+  display: none;
+}
+
+.game-library-row {
+  display: grid;
+  grid-template-columns: var(--library-row-size) 1fr 28px;
+  gap: 11px;
+  align-items: center;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  color: #fff;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.game-library-row .game-cover-compact {
+  width: var(--library-row-size);
+  height: var(--library-row-size);
+  flex-basis: var(--library-row-size);
+  border-radius: 8px;
+}
+
+.game-library-text {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.game-library-text strong,
+.game-library-text small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-library-text strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.game-library-text small {
+  color: var(--player-muted);
+  font-size: 11px;
+}
+
+.game-progress-area {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
+.game-player-review .game-progress-area,
+.game-player-list .game-progress-area {
+  margin-top: 14px;
+}
+
+.game-slider {
+  position: relative;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(150, 137, 142, 0.38);
+}
+
+.game-slider span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(197, 172, 183, 0.76);
+}
+
+.game-time-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.game-time-row > span:last-child {
+  text-align: right;
+}
+
+.game-control-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  margin-top: 24px;
+}
+
+.game-control-row button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  color: #fff;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 180ms ease;
+}
+
+.apple-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  background: currentColor;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+}
+
+.apple-icon-pause {
+  width: 28px;
+  height: 40px;
+  padding-bottom: 80px;
+  mask-image: url("/images/apple-icons/pause.png");
+  -webkit-mask-image: url("/images/apple-icons/pause.png");
+}
+
+.apple-icon-previous,
+.apple-icon-next {
+  width: 39px;
+  height: 25px;
+}
+
+.apple-icon-previous {
+  mask-image: url("/images/apple-icons/previous.png");
+  -webkit-mask-image: url("/images/apple-icons/previous.png");
+}
+
+.apple-icon-next {
+  mask-image: url("/images/apple-icons/next.png");
+  -webkit-mask-image: url("/images/apple-icons/next.png");
+}
+
+.apple-icon-review-outline {
+  width: 20px;
+  height: 20px;
+  mask-image: url("/images/apple-icons/review-outline.png");
+  -webkit-mask-image: url("/images/apple-icons/review-outline.png");
+}
+
+.apple-icon-list-lines {
+  width: 20px;
+  height: 20px;
+  mask-image: url("/images/apple-icons/list-lines.png");
+  -webkit-mask-image: url("/images/apple-icons/list-lines.png");
+}
+
+.apple-icon-row-lines {
+  justify-self: end;
+  width: 18px;
+  height: 14px;
+  color: rgba(255, 226, 238, 0.28);
+  mask-image: url("/images/apple-icons/row-lines.png");
+  -webkit-mask-image: url("/images/apple-icons/row-lines.png");
+}
+
+.apple-icon-cellular {
+  width: 17px;
+  height: 14px;
+  mask-image: url("/images/apple-icons/cellular.png");
+  -webkit-mask-image: url("/images/apple-icons/cellular.png");
+}
+
+.apple-icon-wifi {
+  width: 14px;
+  height: 12px;
+  mask-image: url("/images/apple-icons/wifi.png");
+  -webkit-mask-image: url("/images/apple-icons/wifi.png");
+}
+
+.game-status-battery {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+.game-volume-area {
+  display: grid;
+  grid-template-columns: 19px 1fr 25px;
+  gap: 10px;
+  align-items: center;
+  margin-top: 27px;
+  color: rgba(255, 222, 235, 0.7);
+}
+
+.game-volume-area .game-slider {
+  height: 6px;
+}
+
+.game-bottom-nav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  margin-top: 20px;
+  transform: translateY(-10px);
+}
+
+.game-bottom-nav button {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  color: rgba(255, 226, 238, 0.68);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    color 180ms ease,
+    background 180ms ease;
+}
+
+.game-bottom-nav button.active {
+  color: rgba(69, 25, 51, 0.95);
+  background: rgba(244, 224, 237, 0.78);
+}
+
+.game-bottom-nav button.is-liked.active {
+  color: #7f183f;
+}
+
+@media (max-width: 420px) {
+  .iphone-device-frame {
+    width: min(100%, 338px);
+  }
+
+  .game-player-shell {
+    padding-inline: 20px;
+  }
+
+  .game-track-title {
+    font-size: 18px;
+  }
+
+  .game-review-main {
+    font-size: 22px;
+  }
+}

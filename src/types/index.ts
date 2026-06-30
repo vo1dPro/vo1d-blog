@@ -1,0 +1,58 @@
+export interface Skill {
+  name: string
+  icon?: string
+}
+
+export interface SkillCategory {
+  title: string
+  skills: Skill[]
+}
+
+export interface Article {
+  id: number
+  title: string
+  category: string
+  date: string
+  tags: string[]
+  summary: string
+  content: string[]
+}
+
+export interface ArticleCategory {
+  key: string
+  label: string
+  icon: string
+}
+
+export interface Book {
+  id: number
+  title: string
+  author: string
+  cover: string
+  rating: number
+  comment: string
+}
+
+export interface Game {
+  id: number
+  title: string
+  platform?: string
+  cover: string
+  rating: number
+  playtimeHours: number
+  likeLevel: number
+  comment: string
+}
+
+export interface Photo {
+  id: number
+  src: string
+  alt: string
+  caption?: string
+}
+
+export interface Social {
+  name: string
+  url: string
+  icon: string
+}

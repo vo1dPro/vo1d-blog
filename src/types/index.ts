@@ -1,13 +1,3 @@
-export interface Skill {
-  name: string
-  icon?: string
-}
-
-export interface SkillCategory {
-  title: string
-  skills: Skill[]
-}
-
 export interface Article {
   id: number
   title: string
@@ -29,8 +19,9 @@ export interface Book {
   title: string
   author: string
   cover: string
-  rating: number
-  comment: string
+  accent: string
+  sourceName: string
+  sourceUrl: string
 }
 
 export interface Game {

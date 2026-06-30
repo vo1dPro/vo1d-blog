@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import SectionTitle from '../SectionTitle'
 import { BookOpen, Gamepad2, Camera, ChevronRight } from 'lucide-react'
 import GameMusicPlayer from '../GameMusicPlayer'
-import UnderConstructionTape from '../UnderConstructionTape'
+import { books } from '../../data/books'
 import { games } from '../../data/games'
 import { photos } from '../../data/photos'
 
@@ -14,20 +14,40 @@ export default function HobbiesSection() {
       <div className="mx-auto max-w-6xl px-6">
         <SectionTitle title="Hobbies" subtitle="Things I enjoy outside of code" />
 
-        {/* Books — placeholder */}
         <div className="mb-14">
           <div className="flex items-center gap-2 mb-5">
             <BookOpen size={20} className="text-primary" />
             <h3 className="text-lg font-semibold text-foreground">Books</h3>
           </div>
-          <div className="unfinished-module relative rounded-xl bg-card border border-border p-12 text-center overflow-visible">
-            <UnderConstructionTape />
-            <BookOpen size={40} className="text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-muted-foreground text-sm">Coming soon...</p>
+
+          <div className="books-grid">
+            {books.map(book => (
+              <article
+                className="book-cover-card"
+                key={book.id}
+                style={{ '--book-accent': book.accent } as CSSProperties}
+              >
+                <div className="book-cover-card__stage" aria-hidden="true">
+                  <span className="book-cover-card__shadow" />
+                  <div className="book-cover-card__book">
+                    <img className="book-cover-card__cover" src={book.cover} alt="" />
+                  </div>
+                </div>
+
+                <div className="book-cover-card__info">
+                  <h4>{book.title}</h4>
+                  <span>{book.author}</span>
+                </div>
+
+                <a className="book-cover-card__link" href={book.sourceUrl}>
+                  View on {book.sourceName}
+                  <span aria-hidden="true">&#8599;</span>
+                </a>
+              </article>
+            ))}
           </div>
         </div>
 
-        {/* Games — Music Player */}
         <div className="mb-14">
           <div className="flex items-center gap-2 mb-5">
             <Gamepad2 size={20} className="text-primary" />
@@ -37,7 +57,6 @@ export default function HobbiesSection() {
           <GameMusicPlayer games={games} />
         </div>
 
-        {/* Photos */}
         <div>
           <button
             className="flex items-center gap-2 mb-5 group"

@@ -99,7 +99,7 @@ export default function XboxControllerModel({
           scrollTrigger: {
             trigger: root.closest(".game-showcase") ?? root,
             start: "top 35%",
-            end: "bottom 98%",
+            end: "bottom 45%",
             toggleActions: "play reverse play reverse",
           },
           defaults: {
@@ -229,17 +229,17 @@ export default function XboxControllerModel({
       controllerPivot.rotation.x =
         CONTROLLER_VIEW.rotation.x +
         interaction.currentPitch +
-        Math.sin(elapsed * 1.2) * 0.012;
+        Math.sin(elapsed * 1.2) * 0.15;
       controllerPivot.rotation.y =
         CONTROLLER_VIEW.rotation.y +
         interaction.currentYaw +
-        Math.sin(elapsed * 0.78) * 0.012;
+        Math.sin(elapsed * 0.78) * 0.15;
       controllerPivot.rotation.z =
         CONTROLLER_VIEW.rotation.z -
         interaction.currentYaw * 0.08 +
-        Math.sin(elapsed * 1.05) * 0.008;
+        Math.sin(elapsed * 1.05) * 0.1;
       controllerPivot.position.y =
-        CONTROLLER_VIEW.position.y + Math.sin(elapsed * 1.18) * 0.026;
+        CONTROLLER_VIEW.position.y + Math.sin(elapsed * 1.18) * 0.15;
 
       renderer.render(scene, camera);
       frameId = window.requestAnimationFrame(render);

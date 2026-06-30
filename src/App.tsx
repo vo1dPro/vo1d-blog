@@ -3,8 +3,6 @@ import { SmoothCursor } from './components/SmoothCursor'
 import { AnimatedThemeToggler } from './components/AnimatedThemeToggler'
 import AppFooter from './components/AppFooter'
 import HeroSection from './components/HeroSection'
-import AboutSection from './components/AboutSection'
-import SkillsSection from './components/SkillsSection'
 import BlogSection from './components/BlogSection'
 import BlogPostPage from './components/BlogPostPage'
 import HobbiesSection from './components/HobbiesSection'
@@ -14,8 +12,6 @@ import { getArticleFromPath } from './lib/blog'
 
 const menuItems = [
   { label: 'Home', ariaLabel: 'Go to home page', link: '/#home' },
-  { label: 'About', ariaLabel: 'Learn about me', link: '/#about' },
-  { label: 'Skills', ariaLabel: 'View my skills', link: '/#skills' },
   { label: 'Blog', ariaLabel: 'Read my blog', link: '/#blog' },
   { label: 'Hobbies', ariaLabel: 'My hobbies', link: '/#hobbies' },
 ]
@@ -81,8 +77,6 @@ function App() {
         <>
           <main className="relative z-10">
             <HeroSection />
-            <AboutSection />
-            <SkillsSection />
             <BlogSection />
             <HobbiesSection />
           </main>

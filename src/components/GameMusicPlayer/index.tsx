@@ -12,6 +12,7 @@ import {
   Volume2,
 } from 'lucide-react'
 import type { Game } from '@/types'
+import XboxControllerModel from '../XboxControllerModel'
 import './index.css'
 
 interface GameMusicPlayerProps {
@@ -521,17 +522,21 @@ export default function GameMusicPlayer({ games }: GameMusicPlayerProps) {
   const previousPaletteStyle = previousPalette ? paletteToStyle(previousPalette) : undefined
 
   return (
-    <div className="iphone-device-frame" aria-label="iPhone 17 game player mockup">
-      <div className="iphone-screen-slot">
-        <div
-          className={`game-player-shell game-player-${mode} ${screenAwake ? '' : 'is-screen-off'}`}
-          style={paletteStyle}
-        >
-          <div className="game-bg-layer game-bg-layer-current" style={paletteStyle} aria-hidden="true" />
-          {previousPaletteStyle && (
-            <div className="game-bg-layer game-bg-layer-previous" style={previousPaletteStyle} aria-hidden="true" />
-          )}
-          <div className="game-player-noise" aria-hidden="true" />
+    <div className="game-showcase" aria-label="Game collection display">
+      <XboxControllerModel className="game-controller-stage" />
+
+      <div className="game-phone-stage">
+        <div className="iphone-device-frame" aria-label="iPhone 17 game player mockup">
+          <div className="iphone-screen-slot">
+            <div
+              className={`game-player-shell game-player-${mode} ${screenAwake ? '' : 'is-screen-off'}`}
+              style={paletteStyle}
+            >
+              <div className="game-bg-layer game-bg-layer-current" style={paletteStyle} aria-hidden="true" />
+              {previousPaletteStyle && (
+                <div className="game-bg-layer game-bg-layer-previous" style={previousPaletteStyle} aria-hidden="true" />
+              )}
+              <div className="game-player-noise" aria-hidden="true" />
 
           <div className="game-status-bar">
             <span className="game-status-time">{statusTime}</span>
@@ -693,18 +698,20 @@ export default function GameMusicPlayer({ games }: GameMusicPlayerProps) {
             </button>
           </div>
 
+            </div>
+          </div>
+          <MagicIphoneFrame />
+          <button
+            className="iphone-power-hotspot"
+            type="button"
+            aria-label={screenAwake ? 'Turn screen off' : 'Turn screen on'}
+            aria-pressed={!screenAwake}
+            onClick={() => setScreenAwake((current) => !current)}
+          >
+            <span className="iphone-power-cursor" aria-hidden="true" />
+          </button>
         </div>
       </div>
-      <MagicIphoneFrame />
-      <button
-        className="iphone-power-hotspot"
-        type="button"
-        aria-label={screenAwake ? 'Turn screen off' : 'Turn screen on'}
-        aria-pressed={!screenAwake}
-        onClick={() => setScreenAwake((current) => !current)}
-      >
-        <span className="iphone-power-cursor" aria-hidden="true" />
-      </button>
     </div>
   )
 }

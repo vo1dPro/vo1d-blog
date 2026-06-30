@@ -1,3 +1,27 @@
+.game-showcase {
+  position: relative;
+  isolation: isolate;
+  display: block;
+  min-height: clamp(620px, 82vh, 790px);
+  padding: clamp(18px, 4vw, 44px) 0 clamp(28px, 5vw, 60px);
+  overflow: visible;
+}
+
+.game-phone-stage {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 398px;
+  margin: 0 auto;
+}
+
+.game-controller-stage {
+  position: absolute;
+  z-index: 1;
+  top: clamp(178px, 32%, 246px);
+  left: calc(((100% - 100vw) / 2) + clamp(18px, 2vw, 30px));
+}
+
 .iphone-device-frame {
   position: relative;
   width: min(100%, 368px);
@@ -909,6 +933,53 @@
 
 .game-bottom-nav button.is-liked.active {
   color: #7f183f;
+}
+
+@media (max-width: 1000px) {
+  .game-showcase {
+    min-height: clamp(590px, 78vh, 740px);
+  }
+
+  .game-controller-stage {
+    top: clamp(184px, 31%, 238px);
+    left: calc(((100% - 100vw) / 2) + 18px);
+  }
+}
+
+@media (max-width: 760px) {
+  .game-showcase {
+    min-height: clamp(620px, 108vw, 760px);
+    padding-top: 28px;
+  }
+
+  .game-phone-stage {
+    width: min(100%, 368px);
+    padding-top: 72px;
+  }
+
+  .game-controller-stage {
+    top: 56px;
+    left: -28px;
+  }
+}
+
+@media (max-width: 540px) {
+  .game-showcase {
+    min-height: 0;
+    padding-top: 10px;
+  }
+
+  .game-phone-stage {
+    padding-top: 98px;
+  }
+
+  .game-controller-stage {
+    top: 18px;
+    left: -78px;
+    width: 235px;
+    height: 170px;
+    opacity: 0.74;
+  }
 }
 
 @media (max-width: 420px) {

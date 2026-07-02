@@ -68,6 +68,7 @@ The theme inversion applies only to the footer visual surface. It should not cha
 - Animate content lines upward from masked wrappers.
 - Animate hand reveal offsets from outside the viewport to their resting positions.
 - Respect `prefers-reduced-motion` by showing the final layout without entrance/parallax animation.
+- Use the reference timing and movement values as the baseline: hand reveal offsets from `-125%` and `125%` to `0`, entrance duration `1s` with `power3.out`, exit duration `0.4s` with `power2.in`, title character stagger `{ each: 0.04, from: "center" }`, and content line stagger `0.08`.
 
 ## Canvas Details
 
@@ -77,6 +78,7 @@ The theme inversion applies only to the footer visual surface. It should not cha
 - Render with `requestAnimationFrame`.
 - Limit device pixel ratio to keep rendering stable on high-DPI screens.
 - Only enable hover highlighting for fine pointer devices.
+- Use the reference canvas interaction values as the baseline: `80` ASCII columns, `20px` cells, `18px` monospace glyphs, hover radius `8`, cluster size `10`, highlight lifetime `300ms`, parallax strength `20`, and parallax ease `0.05`.
 
 ## Testing And Verification
 

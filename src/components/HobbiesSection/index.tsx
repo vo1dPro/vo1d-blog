@@ -1,6 +1,7 @@
-import { useState, type CSSProperties } from 'react'
+import { useState } from 'react'
 import SectionTitle from '../SectionTitle'
 import { BookOpen, Gamepad2, Camera, ChevronRight } from 'lucide-react'
+import BookLibrary from '../BookLibrary'
 import GameMusicPlayer from '../GameMusicPlayer'
 import PhotoVelocityGallery from '../PhotoVelocityGallery'
 import { books } from '../../data/books'
@@ -20,32 +21,7 @@ export default function HobbiesSection() {
             <h3 className="text-lg font-semibold text-foreground">Books</h3>
           </div>
 
-          <div className="books-grid">
-            {books.map(book => (
-              <article
-                className="book-cover-card"
-                key={book.id}
-                style={{ '--book-accent': book.accent } as CSSProperties}
-              >
-                <div className="book-cover-card__stage" aria-hidden="true">
-                  <span className="book-cover-card__shadow" />
-                  <div className="book-cover-card__book">
-                    <img className="book-cover-card__cover" src={book.cover} alt="" />
-                  </div>
-                </div>
-
-                <div className="book-cover-card__info">
-                  <h4>{book.title}</h4>
-                  <span>{book.author}</span>
-                </div>
-
-                <a className="book-cover-card__link" href={book.sourceUrl}>
-                  View on {book.sourceName}
-                  <span aria-hidden="true">&#8599;</span>
-                </a>
-              </article>
-            ))}
-          </div>
+          <BookLibrary books={books} />
         </div>
 
         <div className="mb-14">

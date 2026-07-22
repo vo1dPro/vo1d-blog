@@ -9,6 +9,9 @@ export const books: Book[] = [
     accent: '#d7a536',
     sourceName: 'xx',
     sourceUrl: '#',
+    readingOrder: 1,
+    readingTime: '2026-07-23',
+    progress: 0,
   },
   {
     id: 2,
@@ -18,6 +21,9 @@ export const books: Book[] = [
     accent: '#73a486',
     sourceName: 'xx',
     sourceUrl: '#',
+    readingOrder: 2,
+    readingTime: '2026-07-23',
+    progress: 0,
   },
   {
     id: 3,
@@ -27,5 +33,8 @@ export const books: Book[] = [
     accent: '#1f9bd1',
     sourceName: 'xx',
     sourceUrl: '#',
+    readingOrder: 3,
+    readingTime: '2026-07-23',
+    progress: 0,
   },
 ]

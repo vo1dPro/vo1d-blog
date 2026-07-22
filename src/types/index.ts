@@ -38,8 +38,10 @@ export interface Game {
 export interface Photo {
   id: number
   src: string
+  thumbnailSrc: string
   alt: string
-  caption?: string
+  title: string
+  description: string
 }
 
 export interface Social {

@@ -2,12 +2,12 @@ import { useState, type CSSProperties } from 'react'
 import SectionTitle from '../SectionTitle'
 import { BookOpen, Gamepad2, Camera, ChevronRight } from 'lucide-react'
 import GameMusicPlayer from '../GameMusicPlayer'
+import PhotoVelocityGallery from '../PhotoVelocityGallery'
 import { books } from '../../data/books'
 import { games } from '../../data/games'
-import { photos } from '../../data/photos'
 
 export default function HobbiesSection() {
-  const [showPhotos, setShowPhotos] = useState(false)
+  const [showPhotos, setShowPhotos] = useState(true)
 
   return (
     <section id="hobbies" className="py-24">
@@ -59,8 +59,11 @@ export default function HobbiesSection() {
 
         <div>
           <button
+            type="button"
             className="flex items-center gap-2 mb-5 group"
             onClick={() => setShowPhotos(v => !v)}
+            aria-expanded={showPhotos}
+            aria-controls="photo-gallery"
           >
             <Camera size={20} className="text-primary" />
             <h3 className="text-lg font-semibold text-foreground">Photos</h3>
@@ -71,25 +74,7 @@ export default function HobbiesSection() {
           </button>
 
           {showPhotos && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {photos.map(photo => (
-                <div
-                  key={photo.id}
-                  className="relative aspect-square rounded-xl overflow-hidden bg-card border border-border group"
-                >
-                  <img
-                    src={photo.src}
-                    alt={photo.alt}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  {photo.caption && (
-                    <div className="absolute inset-x-0 bottom-0 px-3 py-2 bg-gradient-to-t from-black/60 to-transparent">
-                      <p className="text-xs text-white truncate">{photo.caption}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            <PhotoVelocityGallery />
           )}
         </div>
       </div>

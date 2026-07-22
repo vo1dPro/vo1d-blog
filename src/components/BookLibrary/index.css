@@ -1,8 +1,6 @@
 .book-library {
   --library-panel: color-mix(in srgb, var(--card) 94%, var(--background));
   --library-sidebar: color-mix(in srgb, var(--muted) 88%, var(--card));
-  --library-hover: color-mix(in srgb, var(--foreground) 5%, transparent);
-  --library-selected: color-mix(in srgb, var(--primary) 12%, transparent);
   --library-hairline: color-mix(in srgb, var(--foreground) 12%, transparent);
 
   display: grid;
@@ -26,7 +24,7 @@
   font: inherit;
 }
 
-.book-library__timeline {
+.book-library__sidebar {
   position: relative;
   display: flex;
   min-width: 0;
@@ -34,145 +32,97 @@
   overflow: hidden;
   border-right: 1px solid var(--library-hairline);
   background:
-    linear-gradient(145deg, color-mix(in srgb, #ffffff 18%, transparent), transparent 42%),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, #ffffff 18%, transparent),
+      transparent 42%
+    ),
     var(--library-sidebar);
   backdrop-filter: blur(24px) saturate(135%);
 }
 
-.book-library__timeline-heading {
+.dark .book-library {
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+.dark .book-library__sidebar {
+  background: var(--library-sidebar);
+  backdrop-filter: none;
+}
+
+.book-library__sidebar::before {
+  content: "";
+  position: absolute;
+  top: 39px;
+  bottom: 0;
+  left: 27px;
+  width: 1px;
+  background: color-mix(in srgb, var(--foreground) 12%, transparent);
+  pointer-events: none;
+}
+
+.book-library__sidebar-heading {
   display: flex;
-  height: 56px;
+  height: 40px;
   flex: 0 0 auto;
   align-items: center;
   gap: 9px;
-  padding: 0 18px;
-  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
-  font-size: 0.89rem;
-  font-weight: 700;
+  padding: 0 20px;
+  color: color-mix(in srgb, var(--foreground) 86%, var(--muted-foreground));
+  font-size: 0.95rem;
+  font-weight: 650;
 }
 
-.book-library__timeline-count {
-  display: grid;
-  min-width: 1.35rem;
-  height: 1.35rem;
-  margin-left: auto;
-  place-items: center;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--foreground) 7%, transparent);
+.book-library__sidebar-heading svg {
   color: var(--muted-foreground);
-  font-size: 0.68rem;
-  font-variant-numeric: tabular-nums;
 }
 
-.book-library__timeline-list {
+.book-library__sort-list {
   min-height: 0;
   margin: 0;
-  padding: 18px 12px 28px;
+  padding: 0 10px 24px 52px;
   overflow-y: auto;
   list-style: none;
 }
 
-.book-library__timeline-item {
-  position: relative;
+.book-library__sort-item {
+  min-width: 0;
   margin: 0;
-  padding: 0 0 13px;
 }
 
-.book-library__timeline-item:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  top: 30px;
-  bottom: -4px;
-  left: 18px;
-  width: 1px;
-  background: color-mix(in srgb, var(--foreground) 15%, transparent);
-}
-
-.book-library__timeline-button {
-  position: relative;
-  z-index: 1;
-  display: grid;
+.book-library .book-library__sort-button {
+  display: block;
   width: 100%;
-  grid-template-columns: 36px minmax(0, 1fr);
-  align-items: start;
-  gap: 9px;
-  padding: 8px;
+  padding: 4px 2px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 6px;
   background: transparent;
-  color: inherit;
+  color: color-mix(in srgb, var(--foreground) 44%, var(--muted-foreground));
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.4;
   text-align: left;
   cursor: pointer;
-  transition: background-color 160ms ease, transform 100ms ease;
+  transition: transform 100ms ease;
 }
 
-.book-library__timeline-button:hover {
-  background: var(--library-hover);
-}
-
-.book-library__timeline-button[data-active] {
-  background: var(--library-selected);
-}
-
-.book-library__timeline-button:active {
+.book-library__sort-button:active {
   transform: scale(0.985);
 }
 
-.book-library__timeline-button:focus-visible,
-.book-library__card:focus-visible,
+.book-library__sort-button:focus-visible,
 .book-library__sort:focus-visible,
 .book-library__search:focus-within {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-.book-library__timeline-marker {
-  --book-accent: var(--primary);
-
-  display: grid;
-  width: 22px;
-  height: 22px;
-  margin: 2px 0 0 7px;
-  place-items: center;
-  border: 2px solid color-mix(in srgb, var(--book-accent) 72%, var(--card));
-  border-radius: 999px;
-  background: var(--library-sidebar);
-  box-shadow: 0 0 0 3px var(--library-sidebar);
-  color: color-mix(in srgb, var(--book-accent) 82%, var(--foreground));
-  font-size: 0.64rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
-.book-library__timeline-button[data-active] .book-library__timeline-marker {
-  background: var(--book-accent);
-  color: #ffffff;
-}
-
-.book-library__timeline-copy {
+.book-library__sort-button span {
   display: block;
-  min-width: 0;
-}
-
-.book-library__timeline-copy strong,
-.book-library__timeline-copy span {
-  display: block;
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.book-library__timeline-copy strong {
-  font-size: 0.79rem;
-  font-weight: 680;
-  line-height: 1.35;
-}
-
-.book-library__timeline-copy span {
-  margin-top: 5px;
-  color: var(--muted-foreground);
-  font-size: 0.67rem;
-  line-height: 1.35;
 }
 
 .book-library__catalog {
@@ -226,12 +176,7 @@
   font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 160ms ease, color 160ms ease, transform 100ms ease;
-}
-
-.book-library__sort:hover {
-  background: var(--library-hover);
-  color: var(--foreground);
+  transition: transform 100ms ease;
 }
 
 .book-library__sort:active,
@@ -248,7 +193,9 @@
   border-radius: 8px;
   background: color-mix(in srgb, var(--foreground) 6%, transparent);
   color: var(--muted-foreground);
-  transition: background-color 160ms ease, border-color 160ms ease;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
 }
 
 .book-library__search input {
@@ -310,29 +257,7 @@
   box-shadow: 0 1px 1px color-mix(in srgb, var(--foreground) 4%, transparent);
   color: inherit;
   text-align: left;
-  cursor: pointer;
-  transform: translateY(0);
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease;
-}
-
-.book-library__card:hover {
-  border-color: color-mix(in srgb, var(--primary) 35%, var(--library-hairline));
-  box-shadow: 0 12px 30px color-mix(in srgb, var(--foreground) 11%, transparent);
-  transform: translateY(-2px);
-}
-
-.book-library__card[data-active] {
-  border-color: color-mix(in srgb, var(--primary) 52%, var(--library-hairline));
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--primary) 10%, transparent),
-    0 12px 30px color-mix(in srgb, var(--foreground) 10%, transparent);
-}
-
-.book-library__card:active {
-  transform: scale(0.99);
+  cursor: default;
 }
 
 .book-library__cover-wrap {
@@ -351,11 +276,6 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  transition: transform 260ms cubic-bezier(0.2, 0.75, 0.25, 1);
-}
-
-.book-library__card:hover .book-library__cover {
-  transform: scale(1.018);
 }
 
 .book-library__card-body {
@@ -441,34 +361,29 @@
     height: 720px;
   }
 
-  .book-library__timeline {
+  .book-library__sidebar {
     border-right: 0;
     border-bottom: 1px solid var(--library-hairline);
   }
 
-  .book-library__timeline-heading {
+  .book-library__sidebar-heading {
     height: 48px;
   }
 
-  .book-library__timeline-list {
+  .book-library__sidebar::before {
+    display: none;
+  }
+
+  .book-library__sort-list {
     display: flex;
     gap: 8px;
-    padding: 10px 12px 12px;
+    padding: 8px 10px 10px;
     overflow-x: auto;
     overflow-y: hidden;
   }
 
-  .book-library__timeline-item {
-    min-width: min(250px, 72vw);
-    padding: 0;
-  }
-
-  .book-library__timeline-item::after {
-    display: none;
-  }
-
-  .book-library__timeline-footer {
-    display: none;
+  .book-library__sort-item {
+    min-width: min(220px, 68vw);
   }
 
   .book-library__grid {
@@ -534,7 +449,7 @@
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .book-library__timeline,
+  .book-library__sidebar,
   .book-library__toolbar {
     background: var(--library-panel);
     backdrop-filter: none;

@@ -1,5 +1,5 @@
-import { useMemo, useState, type CSSProperties } from 'react'
-import { ArrowDownUp, BookOpen, Search, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { ArrowDownUp, ChevronDown, Search, X } from 'lucide-react'
 import type { Book } from '@/types'
 import './index.css'
 
@@ -7,20 +7,11 @@ interface BookLibraryProps {
   books: Book[]
 }
 
-function formatReadingPeriod(book: Book): string {
-  if (!book.startedAt) return '阅读时间待补充'
-
-  const start = book.startedAt.replaceAll('-', '.')
-  const end = book.finishedAt?.replaceAll('-', '.') ?? '至今'
-  return `${start} — ${end}`
-}
-
 export default function BookLibrary({ books }: BookLibraryProps) {
   const [query, setQuery] = useState('')
   const [sortAscending, setSortAscending] = useState(true)
-  const [selectedBookId, setSelectedBookId] = useState<number | null>(books[0]?.id ?? null)
 
-  const timelineBooks = useMemo(
+  const orderedBooks = useMemo(
     () => [...books].sort((a, b) => a.readingOrder - b.readingOrder),
     [books],
   )
@@ -39,56 +30,37 @@ export default function BookLibrary({ books }: BookLibraryProps) {
     })
   }, [books, query, sortAscending])
 
-  function selectBook(bookId: number, shouldScroll = false) {
-    setSelectedBookId(bookId)
-    if (shouldScroll) {
-      document.getElementById(`book-card-${bookId}`)?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'nearest',
-      })
-    }
+  function scrollToBook(bookId: number) {
+    document.getElementById(`book-card-${bookId}`)?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    })
   }
 
   return (
     <div className="book-library">
-      <aside className="book-library__timeline" aria-label="阅读时间线">
-        <div className="book-library__timeline-heading">
-          <BookOpen size={17} strokeWidth={1.9} aria-hidden="true" />
-          <span>阅读时间线</span>
-          <span className="book-library__timeline-count">{books.length}</span>
+      <aside className="book-library__sidebar" aria-label="书籍排序">
+        <div className="book-library__sidebar-heading">
+          <ChevronDown size={14} strokeWidth={1.9} aria-hidden="true" />
+          <span>book</span>
         </div>
 
-        <ol className="book-library__timeline-list">
-          {timelineBooks.map((book) => {
-            const isActive = selectedBookId === book.id
-
-            return (
-              <li className="book-library__timeline-item" key={book.id}>
-                <button
-                  type="button"
-                  className="book-library__timeline-button"
-                  data-active={isActive || undefined}
-                  aria-current={isActive ? 'step' : undefined}
-                  onClick={() => selectBook(book.id, true)}
-                >
-                  <span
-                    className="book-library__timeline-marker"
-                    style={{ '--book-accent': book.accent } as CSSProperties}
-                    aria-hidden="true"
-                  >
-                    {book.readingOrder}
-                  </span>
-                  <span className="book-library__timeline-copy">
-                    <strong>{book.title}</strong>
-                    <span>{formatReadingPeriod(book)}</span>
-                  </span>
-                </button>
-              </li>
-            )
-          })}
-        </ol>
-
+        <ul className="book-library__sort-list">
+          {orderedBooks.map((book) => (
+            <li className="book-library__sort-item" key={book.id}>
+              <button
+                type="button"
+                className="book-library__sort-button"
+                aria-label={`第 ${book.readingOrder} 本：${book.title}`}
+                title={book.title}
+                onClick={() => scrollToBook(book.id)}
+              >
+                <span>{book.title}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
       </aside>
 
       <section className="book-library__catalog" aria-label="书架">
@@ -129,17 +101,12 @@ export default function BookLibrary({ books }: BookLibraryProps) {
           {visibleBooks.length > 0 ? (
             <div className="book-library__grid">
               {visibleBooks.map((book) => {
-                const isActive = selectedBookId === book.id
                 const progress = Math.min(100, Math.max(0, book.progress))
 
                 return (
-                  <button
-                    type="button"
+                  <article
                     id={`book-card-${book.id}`}
                     className="book-library__card"
-                    data-active={isActive || undefined}
-                    aria-pressed={isActive}
-                    onClick={() => selectBook(book.id)}
                     key={book.id}
                   >
                     <span className="book-library__cover-wrap">
@@ -169,7 +136,7 @@ export default function BookLibrary({ books }: BookLibraryProps) {
                         </span>
                       </span>
                     </span>
-                  </button>
+                  </article>
                 )
               })}
             </div>

@@ -1,5 +1,11 @@
-import { useMemo, useState } from 'react'
-import { ArrowDownUp, ChevronDown, Search, X } from 'lucide-react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react'
+import { ArrowDownUp, Check, ChevronDown, Search, X } from 'lucide-react'
 import type { Book } from '@/types'
 import './index.css'
 
@@ -7,28 +13,131 @@ interface BookLibraryProps {
   books: Book[]
 }
 
+type BookSortMode = 'readingOrder' | 'progress' | 'title' | 'recent'
+
+const sortOptions: ReadonlyArray<{ value: BookSortMode; label: string }> = [
+  { value: 'readingOrder', label: '阅读顺序' },
+  { value: 'progress', label: '进度' },
+  { value: 'title', label: '书名排序' },
+  { value: 'recent', label: '最近阅读' },
+]
+
+function normalizeProgress(progress: number) {
+  return Math.min(100, Math.max(0, progress))
+}
+
+function getReadingTimestamp(readingTime: string) {
+  const timestamp = Date.parse(readingTime)
+  return Number.isNaN(timestamp) ? 0 : timestamp
+}
+
+function compareBooks(a: Book, b: Book, sortMode: BookSortMode) {
+  switch (sortMode) {
+    case 'progress':
+      return (
+        normalizeProgress(b.progress) - normalizeProgress(a.progress) ||
+        a.readingOrder - b.readingOrder
+      )
+    case 'title':
+      return (
+        a.title.localeCompare(b.title, 'zh-CN', {
+          numeric: true,
+          sensitivity: 'base',
+        }) || a.readingOrder - b.readingOrder
+      )
+    case 'recent':
+      return (
+        getReadingTimestamp(b.readingTime) - getReadingTimestamp(a.readingTime) ||
+        b.readingOrder - a.readingOrder
+      )
+    case 'readingOrder':
+    default:
+      return a.readingOrder - b.readingOrder
+  }
+}
+
 export default function BookLibrary({ books }: BookLibraryProps) {
   const [query, setQuery] = useState('')
-  const [sortAscending, setSortAscending] = useState(true)
+  const [sortMode, setSortMode] = useState<BookSortMode>('readingOrder')
+  const [sortOpen, setSortOpen] = useState(false)
+  const sortControlRef = useRef<HTMLDivElement>(null)
+  const sortTriggerRef = useRef<HTMLButtonElement>(null)
+  const sortOptionRefs = useRef<Array<HTMLButtonElement | null>>([])
 
-  const orderedBooks = useMemo(
-    () => [...books].sort((a, b) => a.readingOrder - b.readingOrder),
-    [books],
+  const sortedBooks = useMemo(
+    () => [...books].sort((a, b) => compareBooks(a, b, sortMode)),
+    [books, sortMode],
   )
 
   const visibleBooks = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('zh-CN')
-    const result = normalizedQuery
-      ? books.filter((book) =>
+    return normalizedQuery
+      ? sortedBooks.filter((book) =>
           `${book.title} ${book.author}`.toLocaleLowerCase('zh-CN').includes(normalizedQuery),
         )
-      : [...books]
+      : sortedBooks
+  }, [query, sortedBooks])
 
-    return result.sort((a, b) => {
-      const difference = a.readingOrder - b.readingOrder
-      return sortAscending ? difference : -difference
+  useEffect(() => {
+    if (!sortOpen) {
+      return
+    }
+
+    const selectedIndex = sortOptions.findIndex((option) => option.value === sortMode)
+    const frameId = window.requestAnimationFrame(() => {
+      sortOptionRefs.current[selectedIndex]?.focus()
     })
-  }, [books, query, sortAscending])
+
+    function closeOnOutsidePointer(event: PointerEvent) {
+      if (!sortControlRef.current?.contains(event.target as Node)) {
+        setSortOpen(false)
+      }
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setSortOpen(false)
+        sortTriggerRef.current?.focus()
+      }
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsidePointer)
+    document.addEventListener('keydown', closeOnEscape)
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+      document.removeEventListener('pointerdown', closeOnOutsidePointer)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [sortMode, sortOpen])
+
+  function selectSortMode(nextSortMode: BookSortMode) {
+    setSortMode(nextSortMode)
+    setSortOpen(false)
+    sortTriggerRef.current?.focus()
+  }
+
+  function handleSortOptionKeyDown(
+    event: ReactKeyboardEvent<HTMLButtonElement>,
+    optionIndex: number,
+  ) {
+    let nextIndex: number | undefined
+
+    if (event.key === 'ArrowDown') {
+      nextIndex = (optionIndex + 1) % sortOptions.length
+    } else if (event.key === 'ArrowUp') {
+      nextIndex = (optionIndex - 1 + sortOptions.length) % sortOptions.length
+    } else if (event.key === 'Home') {
+      nextIndex = 0
+    } else if (event.key === 'End') {
+      nextIndex = sortOptions.length - 1
+    }
+
+    if (nextIndex !== undefined) {
+      event.preventDefault()
+      sortOptionRefs.current[nextIndex]?.focus()
+    }
+  }
 
   function scrollToBook(bookId: number) {
     document.getElementById(`book-card-${bookId}`)?.scrollIntoView({
@@ -47,7 +156,7 @@ export default function BookLibrary({ books }: BookLibraryProps) {
         </div>
 
         <ul className="book-library__sort-list">
-          {orderedBooks.map((book) => (
+          {sortedBooks.map((book) => (
             <li className="book-library__sort-item" key={book.id}>
               <button
                 type="button"
@@ -68,15 +177,69 @@ export default function BookLibrary({ books }: BookLibraryProps) {
           <span className="book-library__result-count">{visibleBooks.length} 个结果</span>
 
           <div className="book-library__toolbar-actions">
-            <button
-              type="button"
-              className="book-library__sort"
-              onClick={() => setSortAscending((current) => !current)}
-              aria-label={`切换为阅读顺序${sortAscending ? '倒序' : '正序'}`}
+            <div
+              className="book-library__sort-control"
+              ref={sortControlRef}
+              onBlur={(event) => {
+                const nextFocusedElement = event.relatedTarget
+
+                if (
+                  !(nextFocusedElement instanceof Node) ||
+                  !event.currentTarget.contains(nextFocusedElement)
+                ) {
+                  setSortOpen(false)
+                }
+              }}
             >
-              <ArrowDownUp size={16} strokeWidth={1.9} aria-hidden="true" />
-              <span>{sortAscending ? '阅读顺序' : '最近阅读'}</span>
-            </button>
+              <button
+                ref={sortTriggerRef}
+                type="button"
+                className="book-library__sort"
+                aria-haspopup="menu"
+                aria-expanded={sortOpen}
+                aria-controls="book-library-sort-menu"
+                aria-label={`排序，当前：${
+                  sortOptions.find((option) => option.value === sortMode)?.label
+                }`}
+                onClick={() => setSortOpen((current) => !current)}
+              >
+                <ArrowDownUp size={16} strokeWidth={1.9} aria-hidden="true" />
+                <span>排序</span>
+              </button>
+
+              {sortOpen && (
+                <div
+                  id="book-library-sort-menu"
+                  className="book-library__sort-menu"
+                  role="menu"
+                  aria-label="选择排序方式"
+                >
+                  {sortOptions.map((option, index) => {
+                    const selected = option.value === sortMode
+
+                    return (
+                      <button
+                        ref={(element) => {
+                          sortOptionRefs.current[index] = element
+                        }}
+                        type="button"
+                        className="book-library__sort-option"
+                        role="menuitemradio"
+                        aria-checked={selected}
+                        key={option.value}
+                        onClick={() => selectSortMode(option.value)}
+                        onKeyDown={(event) => handleSortOptionKeyDown(event, index)}
+                      >
+                        <span>{option.label}</span>
+                        {selected && (
+                          <Check size={14} strokeWidth={2} aria-hidden="true" />
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
 
             <div className="book-library__search" role="search">
               <Search size={16} strokeWidth={1.9} aria-hidden="true" />
@@ -101,7 +264,7 @@ export default function BookLibrary({ books }: BookLibraryProps) {
           {visibleBooks.length > 0 ? (
             <div className="book-library__grid">
               {visibleBooks.map((book) => {
-                const progress = Math.min(100, Math.max(0, book.progress))
+                const progress = normalizeProgress(book.progress)
 
                 return (
                   <article

@@ -117,7 +117,11 @@ export default function XboxControllerModel({
         })
         .fromTo(
           ".xbox-controller-shadow",
-          { autoAlpha: 0, scale: 0.45, x: -64 },
+          {
+            autoAlpha: 0,
+            scale: 0.45,
+            x: -64,
+          },
           { autoAlpha: 0.72, scale: 1, x: 0, duration: 1.05 },
           "<0.16",
         );
@@ -150,7 +154,7 @@ export default function XboxControllerModel({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.4;
+    renderer.toneMappingExposure = 1.25;
 
     scene.add(controllerPivot);
     scene.add(new THREE.AmbientLight(0xffffff, 1.65));

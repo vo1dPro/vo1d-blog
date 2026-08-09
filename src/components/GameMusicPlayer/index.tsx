@@ -12,6 +12,7 @@ import {
   Volume2,
 } from 'lucide-react'
 import type { Game } from '@/types'
+import GlockModel from '../GlockModel'
 import XboxControllerModel from '../XboxControllerModel'
 import './index.css'
 
@@ -524,6 +525,7 @@ export default function GameMusicPlayer({ games }: GameMusicPlayerProps) {
   return (
     <div className="game-showcase" aria-label="Game collection display">
       <XboxControllerModel className="game-controller-stage" />
+      <GlockModel className="game-glock-stage" />
 
       <div className="game-phone-stage">
         <div className="iphone-device-frame" aria-label="iPhone 17 game player mockup">

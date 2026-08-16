@@ -275,8 +275,12 @@ export default function AppFooter() {
 
   return (
     <section ref={trackRef} className="animated-footer-track">
-      <footer
+      <span
         id="footer"
+        className="animated-footer__anchor"
+        aria-hidden="true"
+      />
+      <footer
         ref={footerRef}
         className="animated-footer"
         aria-label="Site footer"

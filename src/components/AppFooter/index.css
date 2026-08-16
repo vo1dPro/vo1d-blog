@@ -9,6 +9,15 @@
   background: #f0f1ed;
 }
 
+.animated-footer__anchor {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
 .animated-footer {
   --footer-bg: #08090b;
   --footer-fg: #f3f5f8;

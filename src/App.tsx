@@ -17,6 +17,7 @@ const menuItems = [
   { label: 'Skills', ariaLabel: 'View my skills', link: '/#skills' },
   { label: 'Blog', ariaLabel: 'Read my blog', link: '/#blog' },
   { label: 'Hobbies', ariaLabel: 'My hobbies', link: '/#hobbies' },
+  { label: 'Footer', ariaLabel: 'Go to site footer', link: '/#footer' },
 ]
 
 const socialItems = socials.map((social) => ({

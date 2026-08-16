@@ -8,6 +8,7 @@ import BlogSection from './components/BlogSection'
 import BlogPostPage from './components/BlogPostPage'
 import HobbiesSection from './components/HobbiesSection'
 import StaggeredMenu from './components/StaggeredMenu'
+import { SmoothScroll } from './components/SmoothScroll'
 import { socials } from './data/socials'
 import { getArticleFromPath } from './lib/blog'
 
@@ -36,14 +37,16 @@ function App() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-background relative cursor-none">
+    <div className="relative isolate min-h-screen bg-background cursor-none">
+      <SmoothScroll />
       <SmoothCursor />
 
-      <div className="fixed top-5 left-5 z-[60]">
-        <AnimatedThemeToggler />
+      <div className="theme-toggle-shell fixed top-5 left-5 z-[60]">
+        <AnimatedThemeToggler className="!text-white hover:!bg-white/10" />
       </div>
 
       <StaggeredMenu
+        className="site-menu-shell"
         isFixed
         position="right"
         items={menuItems}
@@ -52,14 +55,16 @@ function App() {
         displayItemNumbering={false}
         colors={['#1c1c1e', '#2c2c2e']}
         accentColor="var(--primary, #0a84ff)"
-        menuButtonColor="var(--foreground, #fff)"
-        openMenuButtonColor="var(--foreground, #fff)"
+        menuButtonColor="#ffffff"
+        openMenuButtonColor="#ffffff"
         changeMenuColorOnOpen
       />
 
       {article ? (
         <>
-          <BlogPostPage article={article} />
+          <div className="page-shell">
+            <BlogPostPage article={article} />
+          </div>
           <AppFooter />
         </>
       ) : isBlogPath ? (
@@ -77,7 +82,7 @@ function App() {
         </main>
       ) : (
         <>
-          <main className="relative z-10">
+          <main className="page-shell">
             <HeroSection />
             <SkillsSection />
             <BlogSection />

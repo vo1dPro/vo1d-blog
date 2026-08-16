@@ -56,7 +56,7 @@ function App() {
         colors={['#1c1c1e', '#2c2c2e']}
         accentColor="var(--primary, #0a84ff)"
         menuButtonColor="#ffffff"
-        openMenuButtonColor="#ffffff"
+        openMenuButtonColor="var(--card-foreground)"
         changeMenuColorOnOpen
       />
 

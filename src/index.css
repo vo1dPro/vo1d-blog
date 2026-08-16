@@ -57,6 +57,13 @@ html {
   letter-spacing: var(--letter-spacing);
 }
 
+html,
+html *,
+html *::before,
+html *::after {
+  cursor: none !important;
+}
+
 body {
   margin: 0;
   background: var(--background);

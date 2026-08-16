@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, PointerEvent } from 'react'
 import {
   Gamepad2,
@@ -12,8 +12,10 @@ import {
   Volume2,
 } from 'lucide-react'
 import type { Game } from '@/types'
-import XboxControllerModel from '../XboxControllerModel'
 import './index.css'
+
+const GlockModel = lazy(() => import('../GlockModel'))
+const XboxControllerModel = lazy(() => import('../XboxControllerModel'))
 
 interface GameMusicPlayerProps {
   games: Game[]
@@ -47,6 +49,7 @@ const SCREEN_Y = 19.25
 const SCREEN_WIDTH = 389.5
 const SCREEN_HEIGHT = 843.5
 const SCREEN_RADIUS = 55.75
+const DESKTOP_MODELS_QUERY = '(min-width: 761px)'
 const DEFAULT_PALETTE: CoverPalette = {
   primary: 'rgb(113, 48, 54)',
   secondary: 'rgb(129, 36, 79)',
@@ -343,6 +346,9 @@ export default function GameMusicPlayer({ games }: GameMusicPlayerProps) {
   const [statusDate, setStatusDate] = useState(() => new Date())
   const [activePalette, setActivePalette] = useState<CoverPalette>(DEFAULT_PALETTE)
   const [previousPalette, setPreviousPalette] = useState<CoverPalette | null>(null)
+  const [shouldRenderModels, setShouldRenderModels] = useState(() =>
+    window.matchMedia(DESKTOP_MODELS_QUERY).matches,
+  )
   const libraryListRef = useRef<HTMLDivElement | null>(null)
   const activePaletteRef = useRef(DEFAULT_PALETTE)
   const paletteFadeTimerRef = useRef<number | null>(null)
@@ -389,6 +395,15 @@ export default function GameMusicPlayer({ games }: GameMusicPlayerProps) {
   useEffect(() => {
     const timer = window.setInterval(() => setStatusDate(new Date()), 30_000)
     return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(DESKTOP_MODELS_QUERY)
+    const updateModelVisibility = () => setShouldRenderModels(mediaQuery.matches)
+
+    updateModelVisibility()
+    mediaQuery.addEventListener('change', updateModelVisibility)
+    return () => mediaQuery.removeEventListener('change', updateModelVisibility)
   }, [])
 
   useEffect(() => () => {
@@ -523,7 +538,12 @@ export default function GameMusicPlayer({ games }: GameMusicPlayerProps) {
 
   return (
     <div className="game-showcase" aria-label="Game collection display">
-      <XboxControllerModel className="game-controller-stage" />
+      {shouldRenderModels && (
+        <Suspense fallback={null}>
+          <XboxControllerModel className="game-controller-stage" />
+          <GlockModel className="game-glock-stage" />
+        </Suspense>
+      )}
 
       <div className="game-phone-stage">
         <div className="iphone-device-frame" aria-label="iPhone 17 game player mockup">

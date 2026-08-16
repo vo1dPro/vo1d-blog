@@ -1,8 +1,8 @@
 import { ArrowDown, Sparkles } from 'lucide-react'
 
 export default function HeroSection() {
-  function scrollToAbout() {
-    document.querySelector('#about')?.scrollIntoView({ behavior: 'smooth' })
+  function scrollToSkills() {
+    document.querySelector('#skills')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   function scrollToBlog() {
@@ -45,18 +45,18 @@ export default function HeroSection() {
             Read Blog
           </a>
           <a
-            href="#about"
+            href="#skills"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-foreground/5 backdrop-blur-xl text-foreground dark:bg-white/[0.05] dark:text-white rounded-full text-sm font-medium border dark:border-white/[0.1] border-foreground/10 hover:bg-white/[0.1] hover:border-white/[0.18] transition-all duration-300"
-            onClick={(e) => { e.preventDefault(); scrollToAbout() }}
+            onClick={(e) => { e.preventDefault(); scrollToSkills() }}
           >
-            Learn More
+            Explore Skills
           </a>
         </div>
 
         {/* Scroll indicator */}
         <button
           className="mt-16 animate-bounce text-muted-foreground hover:text-foreground transition-colors"
-          onClick={scrollToAbout}
+          onClick={scrollToSkills}
           aria-label="Scroll down"
         >
           <ArrowDown size={24} />

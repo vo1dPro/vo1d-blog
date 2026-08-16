@@ -1,3 +1,5 @@
+import { SocialLinkPreview } from '@/components/SocialLinkPreview'
+
 type IconAsset = {
   src?: string
   light?: string
@@ -52,15 +54,12 @@ export function SocialIconLink({
   className?: string
 }) {
   return (
-    <a
+    <SocialLinkPreview
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={name}
-      title={name}
+      name={name}
       className={`social-icon-link ${className}`}
     >
       <SocialIcon name={name} asset={iconAssets[icon] ?? {}} />
-    </a>
+    </SocialLinkPreview>
   )
 }

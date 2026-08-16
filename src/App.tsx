@@ -3,17 +3,21 @@ import { SmoothCursor } from './components/SmoothCursor'
 import { AnimatedThemeToggler } from './components/AnimatedThemeToggler'
 import AppFooter from './components/AppFooter'
 import HeroSection from './components/HeroSection'
+import SkillsSection from './components/SkillsSection'
 import BlogSection from './components/BlogSection'
 import BlogPostPage from './components/BlogPostPage'
 import HobbiesSection from './components/HobbiesSection'
 import StaggeredMenu from './components/StaggeredMenu'
+import { SmoothScroll } from './components/SmoothScroll'
 import { socials } from './data/socials'
 import { getArticleFromPath } from './lib/blog'
 
 const menuItems = [
   { label: 'Home', ariaLabel: 'Go to home page', link: '/#home' },
+  { label: 'Skills', ariaLabel: 'View my skills', link: '/#skills' },
   { label: 'Blog', ariaLabel: 'Read my blog', link: '/#blog' },
   { label: 'Hobbies', ariaLabel: 'My hobbies', link: '/#hobbies' },
+  { label: 'Footer', ariaLabel: 'Go to site footer', link: '/#footer' },
 ]
 
 const socialItems = socials.map((social) => ({
@@ -34,14 +38,16 @@ function App() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-background relative cursor-none">
+    <div className="relative isolate min-h-screen bg-background cursor-none">
+      <SmoothScroll />
       <SmoothCursor />
 
-      <div className="fixed top-5 left-5 z-[60]">
-        <AnimatedThemeToggler />
+      <div className="theme-toggle-shell fixed top-5 left-5 z-[60]">
+        <AnimatedThemeToggler className="!text-white hover:!bg-white/10" />
       </div>
 
       <StaggeredMenu
+        className="site-menu-shell"
         isFixed
         position="right"
         items={menuItems}
@@ -50,14 +56,16 @@ function App() {
         displayItemNumbering={false}
         colors={['#1c1c1e', '#2c2c2e']}
         accentColor="var(--primary, #0a84ff)"
-        menuButtonColor="var(--foreground, #fff)"
-        openMenuButtonColor="var(--foreground, #fff)"
+        menuButtonColor="#ffffff"
+        openMenuButtonColor="var(--card-foreground)"
         changeMenuColorOnOpen
       />
 
       {article ? (
         <>
-          <BlogPostPage article={article} />
+          <div className="page-shell">
+            <BlogPostPage article={article} />
+          </div>
           <AppFooter />
         </>
       ) : isBlogPath ? (
@@ -75,8 +83,9 @@ function App() {
         </main>
       ) : (
         <>
-          <main className="relative z-10">
+          <main className="page-shell">
             <HeroSection />
+            <SkillsSection />
             <BlogSection />
             <HobbiesSection />
           </main>

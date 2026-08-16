@@ -19,6 +19,8 @@ export interface SmoothCursorProps {
 
 const DESKTOP_POINTER_QUERY = "(any-hover: hover) and (any-pointer: fine)"
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)"
+const FOOTER_TRACK_SELECTOR = ".animated-footer-track"
+const CURSOR_VISUAL_RADIUS = 19
 
 function isTrackablePointer(pointerType: string) {
   return pointerType !== "touch"
@@ -41,7 +43,7 @@ const DefaultCursorSVG: FC = () => {
         />
         <path
           d="M43.7146 40.6933L28.5431 6.34306C27.3556 3.65428 23.5772 3.69516 22.3668 6.32755L6.57226 40.6778C5.3134 43.4156 7.97238 46.298 10.803 45.2549L24.7662 40.109C25.0221 40.0147 25.2999 40.0156 25.5494 40.1082L39.4193 45.254C42.2261 46.2953 44.9254 43.4347 43.7146 40.6933Z"
-          stroke="white"
+          stroke="currentColor"
           strokeWidth={2.25825}
         />
       </g>
@@ -102,6 +104,7 @@ export function SmoothCursor({
   const accumulatedRotation = useRef(0)
   const [isEnabled, setIsEnabled] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [usesFooterBlend, setUsesFooterBlend] = useState(false)
   const [isReducedMotion, setIsReducedMotion] = useState(false)
 
   const cursorX = useSpring(0, springConfig)
@@ -141,6 +144,54 @@ export function SmoothCursor({
   }, [])
 
   useEffect(() => {
+    let footerTrack = document.querySelector<HTMLElement>(FOOTER_TRACK_SELECTOR)
+    let frameId = 0
+
+    const updateFooterBlend = (cursorCenterY = cursorY.get()) => {
+      if (!footerTrack?.isConnected) {
+        footerTrack = document.querySelector<HTMLElement>(FOOTER_TRACK_SELECTOR)
+      }
+
+      const boundaryY = footerTrack?.getBoundingClientRect().top
+      setUsesFooterBlend(
+        boundaryY !== undefined &&
+          cursorCenterY + CURSOR_VISUAL_RADIUS >= boundaryY
+      )
+
+      if (lastUpdateTime.current > 0) {
+        const topElement = document.elementFromPoint(
+          lastMousePos.current.x,
+          lastMousePos.current.y
+        )
+        const isOverInteractiveAscii =
+          topElement !== null &&
+          topElement.closest("[data-ascii-interactive]") !== null
+        setIsVisible(!isOverInteractiveAscii)
+      }
+    }
+
+    const scheduleUpdate = () => {
+      if (frameId) return
+      frameId = requestAnimationFrame(() => {
+        frameId = 0
+        updateFooterBlend()
+      })
+    }
+
+    const unsubscribeCursorY = cursorY.on("change", updateFooterBlend)
+    window.addEventListener("scroll", scheduleUpdate, { passive: true })
+    window.addEventListener("resize", scheduleUpdate)
+    updateFooterBlend()
+
+    return () => {
+      unsubscribeCursorY()
+      window.removeEventListener("scroll", scheduleUpdate)
+      window.removeEventListener("resize", scheduleUpdate)
+      if (frameId) cancelAnimationFrame(frameId)
+    }
+  }, [cursorY])
+
+  useEffect(() => {
     if (!isEnabled) return
 
     let timeout: ReturnType<typeof setTimeout> | null = null
@@ -163,7 +214,12 @@ export function SmoothCursor({
     const smoothPointerMove = (e: PointerEvent) => {
       if (!isTrackablePointer(e.pointerType)) return
 
-      setIsVisible(true)
+      const topElement = document.elementFromPoint(e.clientX, e.clientY)
+      const isOverInteractiveAscii =
+        topElement !== null &&
+        topElement.closest("[data-ascii-interactive]") !== null
+
+      setIsVisible(!isOverInteractiveAscii)
 
       const currentPos = { x: e.clientX, y: e.clientY }
       updateVelocity(currentPos)
@@ -203,12 +259,10 @@ export function SmoothCursor({
       })
     }
 
-    document.body.style.cursor = "none"
     window.addEventListener("pointermove", throttledPointerMove, { passive: true })
 
     return () => {
       window.removeEventListener("pointermove", throttledPointerMove)
-      document.body.style.cursor = "auto"
       if (rafId) cancelAnimationFrame(rafId)
       if (timeout !== null) clearTimeout(timeout)
     }
@@ -218,6 +272,7 @@ export function SmoothCursor({
 
   return (
     <motion.div
+      data-cursor-mode={usesFooterBlend ? "footer-difference" : "solid"}
       style={{
         position: "fixed",
         left: cursorX,
@@ -229,12 +284,13 @@ export function SmoothCursor({
         zIndex: 100,
         pointerEvents: "none",
         willChange: "transform",
-        color: "var(--foreground)",
+        color: usesFooterBlend ? "#ffffff" : "var(--foreground)",
+        mixBlendMode: usesFooterBlend ? "difference" : "normal",
         opacity: isVisible ? 1 : 0,
       }}
       initial={false}
       animate={{ opacity: isVisible ? 1 : 0 }}
-      transition={{ duration: 0.15 }}
+      transition={{ duration: isVisible ? 0.15 : 0.03 }}
     >
       {cursor}
     </motion.div>

@@ -22,6 +22,11 @@ export interface Book {
   accent: string
   sourceName: string
   sourceUrl: string
+  readingOrder: number
+  readingTime: string
+  startedAt?: string
+  finishedAt?: string
+  progress: number
 }
 
 export interface Game {
@@ -38,8 +43,10 @@ export interface Game {
 export interface Photo {
   id: number
   src: string
+  thumbnailSrc: string
   alt: string
-  caption?: string
+  title: string
+  description: string
 }
 
 export interface Social {

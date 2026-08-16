@@ -286,15 +286,8 @@ export default function AppFooter() {
             className="animated-footer__studio"
             data-footer-group="studio"
           >
-            <p className="animated-footer__eyebrow" data-footer-line>
-              Blank Canvas® — Independent studio
-            </p>
             <p ref={introRef} className="animated-footer__intro">
-              We shape expressive digital experiences where code, motion and
-              clear ideas meet on an open canvas.
-            </p>
-            <p className="animated-footer__meta" data-footer-line>
-              Available worldwide · © 2026
+              Thanks for visiting.
             </p>
           </div>
 

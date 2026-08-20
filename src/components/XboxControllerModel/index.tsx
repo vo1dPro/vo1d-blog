@@ -12,7 +12,7 @@ const MODEL_URL = "/models/xbox.glb";
 
 // Adjust the default controller pose here. rotation values use degrees via degToRad().
 const CONTROLLER_VIEW = {
-  scale: 3,
+  scale: 3.4,
   position: new THREE.Vector3(0.12, -0.12, 0),
   rotation: new THREE.Euler(
     THREE.MathUtils.degToRad(4),

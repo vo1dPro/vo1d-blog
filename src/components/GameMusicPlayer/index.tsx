@@ -538,14 +538,14 @@ export default function GameMusicPlayer({ games }: GameMusicPlayerProps) {
 
   return (
     <div className="game-showcase" aria-label="Game collection display">
-      {shouldRenderModels && (
-        <Suspense fallback={null}>
-          <XboxControllerModel className="game-controller-stage" />
-          <GlockModel className="game-glock-stage" />
-        </Suspense>
-      )}
-
       <div className="game-phone-stage">
+        {shouldRenderModels && (
+          <Suspense fallback={null}>
+            <XboxControllerModel className="game-controller-stage" />
+            <GlockModel className="game-glock-stage" />
+          </Suspense>
+        )}
+
         <div className="iphone-device-frame" aria-label="iPhone 17 game player mockup">
           <div className="iphone-screen-slot">
             <div

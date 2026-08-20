@@ -15,22 +15,23 @@
   margin: 0 auto;
 }
 
-.game-controller-stage {
+.game-phone-stage .game-controller-stage {
   position: absolute;
   z-index: 1;
-  top: clamp(178px, 32%, 246px);
-  left: calc(((100% - 100vw) / 2) + clamp(18px, 2vw, 30px));
+  top: calc(50% - clamp(150px, 15vw, 200px));
+  right: calc(160% - clamp(48px, 5vw, 96px));
 }
 
-.game-glock-stage {
+.game-phone-stage .game-glock-stage {
   position: absolute;
   z-index: 1;
-  top: clamp(178px, 32%, 246px);
-  right: calc(((100% - 100vw) / 2) + clamp(18px, 2vw, 30px));
+  top: calc(50% - clamp(150px, 15vw, 200px));
+  left: calc(160% - clamp(48px, 5vw, 96px));
 }
 
 .iphone-device-frame {
   position: relative;
+  z-index: 2;
   width: min(100%, 368px);
   aspect-ratio: 433 / 882;
   margin: 0 auto;
@@ -946,17 +947,6 @@
   .game-showcase {
     min-height: clamp(590px, 78vh, 740px);
   }
-
-  .game-controller-stage {
-    top: clamp(184px, 31%, 238px);
-    left: calc(((100% - 100vw) / 2) + 18px);
-  }
-
-  .game-glock-stage {
-    top: clamp(184px, 31%, 238px);
-    right: calc(((100% - 100vw) / 2) + 18px);
-  }
-
 }
 
 @media (max-width: 760px) {
@@ -969,17 +959,6 @@
     width: min(100%, 368px);
     padding-top: 72px;
   }
-
-  .game-controller-stage {
-    top: 56px;
-    left: -28px;
-  }
-
-  .game-glock-stage {
-    top: 56px;
-    right: -28px;
-  }
-
 }
 
 @media (max-width: 540px) {
@@ -990,22 +969,6 @@
 
   .game-phone-stage {
     padding-top: 98px;
-  }
-
-  .game-controller-stage {
-    top: 18px;
-    left: -78px;
-    width: 235px;
-    height: 170px;
-    opacity: 0.74;
-  }
-
-  .game-glock-stage {
-    top: 18px;
-    right: -78px;
-    width: 235px;
-    height: 170px;
-    opacity: 0.74;
   }
 }
 

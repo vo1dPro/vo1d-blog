@@ -88,24 +88,17 @@
 }
 
 .animated-footer__studio {
+  position: absolute;
+  top: clamp(5rem, 6vw, 7.25rem);
+  right: clamp(8rem, 8vw, 8rem);
   max-width: 31rem;
-  transform: translate(
-    clamp(3rem, 3vw, 3.5rem),
-    clamp(3.25rem, 3.2vw, 3.75rem)
-  );
+  text-align: right;
 }
 
 .animated-footer__eyebrow,
 .animated-footer__meta,
 .animated-footer__intro {
   margin: 0;
-}
-
-.animated-footer__eyebrow,
-.animated-footer__nav-label {
-  color: var(--footer-muted);
-  font-size: 0.68em;
-  letter-spacing: 0.12em;
 }
 
 .animated-footer__intro {
@@ -128,57 +121,6 @@
   letter-spacing: 0.055em;
 }
 
-.animated-footer__nav {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.3rem;
-}
-
-.animated-footer__nav-label {
-  margin-bottom: 0.48rem;
-}
-
-.animated-footer__nav a {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.24rem;
-  color: inherit;
-  text-decoration: none;
-}
-
-.animated-footer__nav a::after {
-  position: absolute;
-  right: 0;
-  bottom: -0.14rem;
-  left: 0;
-  height: 1px;
-  background: var(--footer-accent);
-  content: "";
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.animated-footer__nav a:hover::after,
-.animated-footer__nav a:focus-visible::after {
-  transform: scaleX(1);
-  transform-origin: left;
-}
-
-.animated-footer__nav a:focus-visible {
-  outline: 2px solid var(--footer-accent);
-  outline-offset: 4px;
-}
-
-.animated-footer__nav svg {
-  width: 0.78em;
-  height: 0.78em;
-  stroke-width: 2.2;
-}
-
-[data-footer-line],
 .animated-footer__intro-line {
   will-change: clip-path, transform;
 }
@@ -224,7 +166,7 @@
   left: clamp(1rem, 2.4vw, 2.9rem);
   z-index: 3;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: end;
   color: var(--footer-fg);
   font-size: clamp(5rem, 17.2vw, 20rem);
@@ -240,6 +182,49 @@
 .animated-footer__title-end-group {
   display: inline-flex;
   align-items: flex-end;
+}
+
+.animated-footer__socials {
+  display: flex;
+  align-items: center;
+  align-self: end;
+  gap: clamp(0.3rem, 0.4vw, 0.4rem);
+  margin-bottom: clamp(0.1rem, 0.1vw, 0.5rem);
+  pointer-events: auto;
+}
+
+.animated-footer__socials > span {
+  display: block;
+}
+
+.animated-footer__socials .social-icon-link {
+  width: clamp(1.9rem, 2.2vw, 2.65rem);
+  height: clamp(1.9rem, 2.2vw, 2.65rem);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.animated-footer__socials .social-icon {
+  width: clamp(1rem, 1.25vw, 1.45rem);
+  height: clamp(1rem, 1.25vw, 1.45rem);
+}
+
+/* The footer deliberately reverses the page theme: light page = dark footer. */
+.animated-footer__socials .social-icon--light {
+  opacity: 0;
+}
+
+.animated-footer__socials .social-icon--dark {
+  opacity: 1;
+}
+
+html.dark .animated-footer__socials .social-icon--light {
+  opacity: 1;
+}
+
+html.dark .animated-footer__socials .social-icon--dark {
+  opacity: 0;
 }
 
 .animated-footer__title-word--the {
@@ -314,6 +299,7 @@
   .animated-footer__studio {
     position: fixed;
     top: 35%;
+    right: auto;
     left: 50%;
     width: max-content;
     max-width: calc(100vw - 2.5rem);
@@ -324,11 +310,6 @@
   .animated-footer__intro {
     max-width: 21rem;
     font-size: 2.25rem;
-  }
-
-  .animated-footer__nav--pages {
-    justify-self: end;
-    min-width: 6rem;
   }
 
   .animated-footer__hand--left {
@@ -349,6 +330,10 @@
     left: 1rem;
     font-size: 21vw;
     line-height: 0.78;
+  }
+
+  .animated-footer__socials {
+    display: none;
   }
 }
 
@@ -379,12 +364,7 @@
 @media (prefers-reduced-motion: reduce) {
   .animated-footer__hand,
   .animated-footer__title-char,
-  [data-footer-line],
   .animated-footer__intro-line {
     will-change: auto;
-  }
-
-  .animated-footer__nav a::after {
-    transition: none;
   }
 }

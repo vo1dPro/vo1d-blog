@@ -1,20 +1,13 @@
 import { useLayoutEffect, useRef } from 'react'
-import { ArrowUpRight } from 'lucide-react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
+import { SocialIconLink } from '@/components/SocialIconLink'
 import { AsciiArt } from '@/components/ui/ascii-art'
 import { socials } from '@/data/socials'
 import './index.css'
 
 gsap.registerPlugin(ScrollTrigger, SplitText)
-
-const pageLinks = [
-  { label: 'Home', href: '/#home' },
-  { label: 'Skills', href: '/#skills' },
-  { label: 'Journal', href: '/#blog' },
-  { label: 'Archive', href: '/#hobbies' },
-]
 
 const controlsInvertedClass = 'footer-controls-inverted'
 
@@ -79,21 +72,9 @@ export default function AppFooter() {
 
         const leftTitleCharacters = [...theSplit.chars].reverse()
         const rightTitleCharacters = [...endSplit.chars]
-        const studioLineItems = gsap.utils.toArray<HTMLElement>(
-          '[data-footer-group="studio"] [data-footer-line]',
-          footer,
-        )
-        const studioItems: HTMLElement[] = [
-          ...studioLineItems.slice(0, 1),
-          ...(introSplit.lines as HTMLElement[]),
-          ...studioLineItems.slice(1),
-        ]
-        const networkItems = gsap.utils.toArray<HTMLElement>(
-          '[data-footer-group="network"] [data-footer-line]',
-          footer,
-        )
-        const pageItems = gsap.utils.toArray<HTMLElement>(
-          '[data-footer-group="pages"] [data-footer-line]',
+        const studioItems = introSplit.lines as HTMLElement[]
+        const footerSocialIcons = gsap.utils.toArray<HTMLElement>(
+          '[data-footer-social-icon]',
           footer,
         )
         const reduceMotion = window.matchMedia(
@@ -116,9 +97,8 @@ export default function AppFooter() {
               leftTitleCharacters,
               rightTitleCharacters,
               dot,
+              footerSocialIcons,
               studioItems,
-              networkItems,
-              pageItems,
             ],
             { clearProps: 'all' },
           )
@@ -132,7 +112,8 @@ export default function AppFooter() {
           yPercent: 145,
         })
         gsap.set(dot, { scale: 0, autoAlpha: 0 })
-        gsap.set([...studioItems, ...networkItems, ...pageItems], {
+        gsap.set(footerSocialIcons, { autoAlpha: 0, yPercent: 70, scale: 0.8 })
+        gsap.set(studioItems, {
           clipPath: 'inset(0 100% 0 0)',
           yPercent: 16,
         })
@@ -187,6 +168,18 @@ export default function AppFooter() {
             },
             0.58,
           )
+          .to(
+            footerSocialIcons,
+            {
+              autoAlpha: 1,
+              yPercent: 0,
+              scale: 1,
+              duration: 0.2,
+              stagger: { each: 0.07, from: 'center' },
+              ease: 'back.out(1.6)',
+            },
+            0.52,
+          )
 
         const addLineReveal = (
           targets: HTMLElement[],
@@ -208,8 +201,6 @@ export default function AppFooter() {
         }
 
         addLineReveal(studioItems, 0.72, 0.075)
-        addLineReveal(networkItems, 1.02, 0.07)
-        addLineReveal(pageItems, 1.29, 0.07)
 
         const leftX = gsap.quickTo(leftHand, 'x', {
           duration: 0.8,
@@ -286,51 +277,11 @@ export default function AppFooter() {
         aria-label="Site footer"
       >
         <div className="animated-footer__top">
-          <div
-            className="animated-footer__studio"
-            data-footer-group="studio"
-          >
+          <div className="animated-footer__studio">
             <p ref={introRef} className="animated-footer__intro">
               Thanks for visiting.
             </p>
           </div>
-
-          <nav
-            className="animated-footer__nav"
-            aria-label="Social links"
-            data-footer-group="network"
-          >
-            <span className="animated-footer__nav-label" data-footer-line>
-              Network
-            </span>
-            {socials.map((social) => (
-              <a
-                key={social.name}
-                href={social.url}
-                target="_blank"
-                rel="noreferrer"
-                data-footer-line
-              >
-                <span>{social.name}</span>
-                <ArrowUpRight aria-hidden="true" />
-              </a>
-            ))}
-          </nav>
-
-          <nav
-            className="animated-footer__nav animated-footer__nav--pages"
-            aria-label="Footer navigation"
-            data-footer-group="pages"
-          >
-            <span className="animated-footer__nav-label" data-footer-line>
-              Explore
-            </span>
-            {pageLinks.map((link) => (
-              <a key={link.label} href={link.href} data-footer-line>
-                {link.label}
-              </a>
-            ))}
-          </nav>
         </div>
 
         <div className="animated-footer__hands">
@@ -388,6 +339,18 @@ export default function AppFooter() {
           >
             The
           </span>
+          <nav className="animated-footer__socials" aria-label="Footer social links">
+            {socials.map((social) => (
+              <span key={social.name} data-footer-social-icon>
+                <SocialIconLink
+                  name={social.name}
+                  href={social.url}
+                  icon={social.icon}
+                  className="animated-footer__social-link"
+                />
+              </span>
+            ))}
+          </nav>
           <span className="animated-footer__title-end-group">
             <span
               ref={endRef}

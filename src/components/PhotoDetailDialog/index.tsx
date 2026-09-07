@@ -31,15 +31,19 @@ const FOCUSABLE_SELECTOR = [
 
 function DetailPhotoImage({ photo }: { photo: Photo }) {
   const [displaySrc, setDisplaySrc] = useState(photo.thumbnailSrc)
+  const [failed, setFailed] = useState(false)
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     let cancelled = false
     let decodeFailed = false
     const fullImage = new Image()
+    const handleError = () => { if (!cancelled) setFailed(true) }
 
     const showFullImage = () => {
       if (!cancelled) {
         setDisplaySrc(photo.src)
+        setFailed(false)
       }
     }
 
@@ -50,6 +54,7 @@ function DetailPhotoImage({ photo }: { photo: Photo }) {
     }
 
     fullImage.addEventListener('load', handleLoad, { once: true })
+    fullImage.addEventListener('error', handleError, { once: true })
     fullImage.src = photo.src
 
     if (typeof fullImage.decode === 'function') {
@@ -57,6 +62,8 @@ function DetailPhotoImage({ photo }: { photo: Photo }) {
         decodeFailed = true
         if (fullImage.complete && fullImage.naturalWidth > 0) {
           showFullImage()
+        } else {
+          handleError()
         }
       })
     } else {
@@ -66,8 +73,14 @@ function DetailPhotoImage({ photo }: { photo: Photo }) {
     return () => {
       cancelled = true
       fullImage.removeEventListener('load', handleLoad)
+      fullImage.removeEventListener('error', handleError)
     }
-  }, [photo])
+  }, [photo, attempt])
+
+  if (failed) return <div role="status" className="flex h-full w-full flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
+    <span>Image unavailable</span>
+    <button type="button" onClick={() => { setFailed(false); setAttempt(value => value + 1) }} className="rounded-md border border-border px-3 py-1.5">Retry image</button>
+  </div>
 
   return (
     <img
@@ -76,6 +89,7 @@ function DetailPhotoImage({ photo }: { photo: Photo }) {
       width={720}
       height={480}
       decoding="async"
+      onError={() => setFailed(true)}
       className="h-full w-full object-contain"
     />
   )

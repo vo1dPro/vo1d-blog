@@ -1,40 +1,37 @@
 import { UserRound } from 'lucide-react'
+import type { TocItem } from '@/services/articles/model'
+import { useSiteContent } from '@/hooks/site-content-context'
+import QueryContent from '../QueryContent'
 
-const tocItems = [
-  { href: '#overview', label: 'Overview' },
-  { href: '#key-notes', label: 'Key Notes' },
-  { href: '#details', label: 'Details' },
-  { href: '#conclusion', label: 'Conclusion' },
-]
-
-export default function BlogPostSidebar() {
+export default function BlogPostSidebar({ toc }: { toc: TocItem[] }) {
+  const { profile } = useSiteContent()
   return (
     <aside className="hidden w-[350px] shrink-0 bg-muted/60 p-6 dark:bg-muted/20 lg:block lg:p-10">
       <div className="sticky top-24 space-y-8">
-        <div className="flex items-center gap-3">
+        <QueryContent query={profile} label="author">{data => <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-card shadow-sm ring-1 ring-border">
-            <UserRound size={20} className="text-muted-foreground" />
+            {data.avatar ? <img src={data.avatar.url} alt={data.displayName} className="h-full w-full rounded-full object-cover" /> : <UserRound size={20} className="text-muted-foreground" />}
           </div>
           <div>
-            <p className="text-sm font-semibold text-foreground">vo1d</p>
-            <p className="text-xs text-muted-foreground">Developer</p>
+            <p className="text-sm font-semibold text-foreground">{data.displayName}</p>
+            <p className="text-xs text-muted-foreground">{data.role}</p>
           </div>
-        </div>
+        </div>}</QueryContent>
 
-        <nav className="rounded-lg border border-border bg-card p-6">
+        {toc.length > 0 && <nav aria-label="On this page" className="rounded-lg border border-border bg-card p-6">
           <p className="mb-4 text-sm font-semibold text-foreground">On this page</p>
           <div className="space-y-3">
-            {tocItems.map((item) => (
+            {toc.map((item) => (
               <a
-                key={item.href}
-                href={item.href}
+                key={item.id}
+                href={`#${encodeURIComponent(item.id)}`}
                 className="block text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
-                {item.label}
+                {item.text}
               </a>
             ))}
           </div>
-        </nav>
+        </nav>}
       </div>
     </aside>
   )

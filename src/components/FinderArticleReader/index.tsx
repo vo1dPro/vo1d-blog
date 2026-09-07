@@ -1,4 +1,9 @@
 import { useEffect, useRef, useState, startTransition } from 'react'
+import { useCallback } from 'react'
+import { getArticle } from '@/services/articles'
+import { usePublicQuery } from '@/hooks/usePublicQuery'
+import QueryContent from '../QueryContent'
+import ArticleBody from '../ArticleBody'
 import type { Article } from '@/types'
 import { Calendar, Tag } from 'lucide-react'
 
@@ -75,15 +80,7 @@ export default function FinderArticleReader({ article }: FinderArticleReaderProp
             ))}
           </div>
 
-          <div className="space-y-5">
-            {displayed.content.map((paragraph, index) => (
-              <p
-                key={index}
-                className="text-[#1D1D1F] leading-relaxed text-[15px]"
-                dangerouslySetInnerHTML={{ __html: paragraph }}
-              />
-            ))}
-          </div>
+          <FinderBody articleId={displayed.id} />
 
           <div className="mt-12 pt-6 border-t border-gray-100 text-center text-sm text-muted-foreground">
             — End of Article —
@@ -92,4 +89,10 @@ export default function FinderArticleReader({ article }: FinderArticleReaderProp
       </div>
     </div>
   )
+}
+
+function FinderBody({ articleId }: { articleId: number }) {
+  const load = useCallback((signal: AbortSignal) => getArticle(String(articleId), signal), [articleId])
+  const query = usePublicQuery(load)
+  return <QueryContent query={query} label="article">{article => <ArticleBody html={article.contentHtml} finder />}</QueryContent>
 }

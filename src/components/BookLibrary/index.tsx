@@ -26,7 +26,8 @@ function normalizeProgress(progress: number) {
   return Math.min(100, Math.max(0, progress))
 }
 
-function getReadingTimestamp(readingTime: string) {
+function getReadingTimestamp(readingTime: string | null) {
+  if (readingTime === null) return 0
   const timestamp = Date.parse(readingTime)
   return Number.isNaN(timestamp) ? 0 : timestamp
 }
@@ -52,7 +53,7 @@ function compareBooks(a: Book, b: Book, sortMode: BookSortMode) {
       )
     case 'readingOrder':
     default:
-      return a.readingOrder - b.readingOrder
+      return a.sortOrder - b.sortOrder || a.readingOrder - b.readingOrder || a.id - b.id
   }
 }
 

@@ -1,5 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
-import type { Article } from '@/types'
+import { useEffect } from 'react'
+import ArticleBody from '../ArticleBody'
+import type { ArticleDetail } from '@/types'
 import {
   getArticleThumbnail,
 } from '@/lib/blog'
@@ -9,13 +11,15 @@ import BlogPostSidebar from '../BlogPostSidebar'
 import ReadMoreSection from '../ReadMoreSection'
 
 interface BlogPostPageProps {
-  article: Article
+  article: ArticleDetail
 }
 
 export default function BlogPostPage({ article }: BlogPostPageProps) {
-  const intro = article.content[0]
-  const body = article.content.slice(1, -1)
-  const conclusion = article.content.at(-1)
+  useEffect(() => {
+    const previous = document.title
+    document.title = article.seoTitle ?? article.title
+    return () => { document.title = previous }
+  }, [article.seoTitle, article.title])
 
   return (
     <main className="relative z-10 min-h-screen bg-background pt-20">
@@ -69,55 +73,7 @@ export default function BlogPostPage({ article }: BlogPostPageProps) {
 
             <div className="p-6 lg:p-10">
               <div className="mx-auto max-w-3xl">
-                <section id="overview" className="scroll-mt-24">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                    Overview
-                  </h2>
-                  <p
-                    className="mt-4 text-base leading-8 text-foreground/85"
-                    dangerouslySetInnerHTML={{ __html: intro }}
-                  />
-                </section>
-
-                <section id="key-notes" className="mt-10 scroll-mt-24">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                    Key Notes
-                  </h2>
-                  <div className="mt-4 rounded-lg border border-border bg-muted/40 p-5">
-                    <ul className="space-y-3 text-sm leading-6 text-muted-foreground">
-                      {article.tags.map((tag) => (
-                        <li key={tag}>Use this post as a reference for {tag} decisions and tradeoffs.</li>
-                      ))}
-                    </ul>
-                  </div>
-                </section>
-
-                <section id="details" className="mt-10 scroll-mt-24">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                    Details
-                  </h2>
-                  <div className="mt-4 space-y-6">
-                    {body.map((paragraph, index) => (
-                      <p
-                        key={index}
-                        className="text-base leading-8 text-foreground/85"
-                        dangerouslySetInnerHTML={{ __html: paragraph }}
-                      />
-                    ))}
-                  </div>
-                </section>
-
-                {conclusion && (
-                  <section id="conclusion" className="mt-10 scroll-mt-24">
-                    <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                      Conclusion
-                    </h2>
-                    <p
-                      className="mt-4 text-base leading-8 text-foreground/85"
-                      dangerouslySetInnerHTML={{ __html: conclusion }}
-                    />
-                  </section>
-                )}
+                <ArticleBody html={article.contentHtml} />
               </div>
             </div>
           </article>
@@ -125,7 +81,7 @@ export default function BlogPostPage({ article }: BlogPostPageProps) {
           <ReadMoreSection currentArticle={article} />
         </main>
 
-        <BlogPostSidebar />
+        <BlogPostSidebar toc={article.toc} />
       </div>
     </main>
   )

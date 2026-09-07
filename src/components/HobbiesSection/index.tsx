@@ -4,11 +4,15 @@ import { BookOpen, Gamepad2, Camera, ChevronRight } from 'lucide-react'
 import BookLibrary from '../BookLibrary'
 import GameMusicPlayer from '../GameMusicPlayer'
 import PhotoVelocityGallery from '../PhotoVelocityGallery'
-import { books } from '../../data/books'
-import { games } from '../../data/games'
+import { getBooks } from '@/services/books'
+import { getGames } from '@/services/games'
+import { usePublicQuery } from '@/hooks/usePublicQuery'
+import QueryContent from '../QueryContent'
 
 export default function HobbiesSection() {
   const [showPhotos, setShowPhotos] = useState(true)
+  const books = usePublicQuery(getBooks)
+  const games = usePublicQuery(getGames)
 
   return (
     <section id="hobbies" className="py-24">
@@ -21,7 +25,9 @@ export default function HobbiesSection() {
             <h3 className="text-lg font-semibold text-foreground">Books</h3>
           </div>
 
-          <BookLibrary books={books} />
+          <QueryContent query={books} label="books" isEmpty={items => items.length === 0}>
+            {items => <BookLibrary books={items} />}
+          </QueryContent>
         </div>
 
         <div className="mb-14">
@@ -30,7 +36,9 @@ export default function HobbiesSection() {
             <h3 className="text-lg font-semibold text-foreground">Games</h3>
           </div>
 
-          <GameMusicPlayer games={games} />
+          <QueryContent query={games} label="games" isEmpty={items => items.length === 0}>
+            {items => <GameMusicPlayer games={items} />}
+          </QueryContent>
         </div>
 
         <div>

@@ -235,6 +235,7 @@ function rgbToHsl(red: number, green: number, blue: number) {
 function extractCoverPalette(src: string) {
   return new Promise<CoverPalette>((resolve, reject) => {
     const image = new Image()
+    image.crossOrigin = 'anonymous'
     image.onload = () => {
       const canvas = document.createElement('canvas')
       const size = 36

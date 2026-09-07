@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { ArrowUpRight } from 'lucide-react'
-import { articles } from '@/data/articles'
+import { getArticleCatalog } from '@/services/articles'
+import { usePublicQuery } from '@/hooks/usePublicQuery'
+import QueryContent from '../QueryContent'
 import {
   getArticlePath,
   getArticleThumbnail,
@@ -9,19 +11,29 @@ import { BlogMeta } from '../BlogPrimitives'
 import FlickeringGrid from '../FlickeringGrid'
 
 export default function BlogSection() {
+  const query = usePublicQuery(getArticleCatalog)
+  return <section id="blog" className="relative py-24">
+    <QueryContent query={query} label="articles" isEmpty={data => data.articles.length === 0}>
+      {data => <BlogCatalog data={data} />}
+    </QueryContent>
+  </section>
+}
+
+function BlogCatalog({ data }: { data: Awaited<ReturnType<typeof getArticleCatalog>> }) {
+  const { articles, categories } = data
   const [selectedTag, setSelectedTag] = useState('All')
 
   const sortedArticles = useMemo(
     () => [...articles].sort((left, right) => right.date.localeCompare(left.date)),
-    [],
+    [articles],
   )
 
   const tags = useMemo(
     () => [
       'All',
-      ...Array.from(new Set(sortedArticles.flatMap((article) => article.tags))).sort(),
+      ...data.tags.map(tag => tag.name).sort(),
     ],
-    [sortedArticles],
+    [data.tags],
   )
 
   const tagCounts = useMemo(() => {
@@ -39,7 +51,7 @@ export default function BlogSection() {
   }, [selectedTag, sortedArticles])
 
   return (
-    <section id="blog" className="relative py-24">
+    <>
       <div className="relative overflow-hidden border-y border-border bg-background">
         <div className="absolute left-0 top-0 z-0 h-[220px] w-full [mask-image:linear-gradient(to_top,transparent_10%,black_95%)]">
           <FlickeringGrid
@@ -95,16 +107,17 @@ export default function BlogSection() {
 
       <div className="mx-auto max-w-7xl px-6 lg:px-0">
         <div className="grid grid-cols-1 overflow-hidden border-x border-border md:grid-cols-2 lg:grid-cols-3">
-          {filteredArticles.map((article, index) => (
+          {filteredArticles.map((article) => (
             <a
               key={article.id}
               href={getArticlePath(article)}
+              title={categories.find(category => category.key === article.categoryKey)?.label ?? article.category}
               className="group relative block border-b border-r border-border bg-card text-left transition-colors hover:bg-muted/45"
             >
               <div className="flex min-h-full flex-col">
                 <div className="relative h-48 w-full overflow-hidden bg-muted">
                   <img
-                    src={getArticleThumbnail(article, index)}
+                    src={getArticleThumbnail(article)}
                     alt=""
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
@@ -144,6 +157,6 @@ export default function BlogSection() {
           ))}
         </div>
       </div>
-    </section>
+    </>
   )
 }

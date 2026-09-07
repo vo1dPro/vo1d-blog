@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react'
 import IconCloud from '../IconCloud'
 import { TextAnimate } from '../TextAnimate'
-import {
-  skillIconImages,
-  skillIconImagesDark,
-  skillIconPlaceholders,
-} from '@/data/skills'
-
-const learningNote = 'In the age of AI, learning is no longer about remembering every answer. It is about asking better questions, testing what seems convincing, and turning limitless information into understanding, creativity, and choices we can truly call our own.'
+import { getSkills } from '@/services/skills'
+import { usePublicQuery } from '@/hooks/usePublicQuery'
+import { useSiteContent } from '@/hooks/site-content-context'
+import QueryContent from '../QueryContent'
 
 function readDarkTheme() {
   const root = document.documentElement
@@ -18,6 +15,8 @@ function readDarkTheme() {
 
 export default function SkillsSection() {
   const [isDarkTheme, setIsDarkTheme] = useState(readDarkTheme)
+  const skills = usePublicQuery(getSkills)
+  const { profile } = useSiteContent()
 
   useEffect(() => {
     const root = document.documentElement
@@ -38,16 +37,19 @@ export default function SkillsSection() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid items-center gap-10 md:grid-cols-2 lg:gap-16">
           <div className="flex justify-center">
-            <IconCloud
-              images={isDarkTheme ? skillIconImagesDark : skillIconImages}
+            <QueryContent query={skills} label="skills" isEmpty={items => items.length === 0}>{items => <IconCloud
+              images={items.flatMap(skill => {
+                const icon = isDarkTheme ? skill.darkIcon ?? skill.icon : skill.icon ?? skill.darkIcon
+                return icon ? [icon.url] : []
+              })}
               showControl={false}
               autoRotateDuration={5000}
               className="max-w-[440px] sm:max-w-[480px]"
-            />
+            />}</QueryContent>
           </div>
 
           <div className="flex justify-center md:justify-start">
-            <TextAnimate
+            <QueryContent query={profile} label="site profile">{data => <TextAnimate
               as="p"
               animation="blurInUp"
               by="word"
@@ -56,18 +58,15 @@ export default function SkillsSection() {
               once
               className="max-w-xl text-pretty text-center text-2xl font-medium leading-[1.45] tracking-tight text-foreground sm:text-3xl md:text-left lg:text-4xl"
             >
-              {learningNote}
-            </TextAnimate>
+              {data.learningNote}
+            </TextAnimate>}</QueryContent>
           </div>
         </div>
 
         <div className="sr-only">
-          <p>
-            The icons are temporary visual placeholders and will be updated to match the actual technology stack.
-          </p>
-          <ul aria-label="Temporary technology icon list">
-            {skillIconPlaceholders.map((icon) => (
-              <li key={icon.name}>{icon.name}</li>
+          <ul aria-label="Technology list">
+            {skills.status === 'success' && skills.data.map((icon) => (
+              <li key={icon.id}>{icon.name}</li>
             ))}
           </ul>
         </div>

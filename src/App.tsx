@@ -5,12 +5,12 @@ import AppFooter from './components/AppFooter'
 import HeroSection from './components/HeroSection'
 import SkillsSection from './components/SkillsSection'
 import BlogSection from './components/BlogSection'
-import BlogPostPage from './components/BlogPostPage'
+import ArticleRoute from './components/ArticleRoute'
 import HobbiesSection from './components/HobbiesSection'
 import StaggeredMenu from './components/StaggeredMenu'
 import { SmoothScroll } from './components/SmoothScroll'
-import { socials } from './data/socials'
-import { getArticleFromPath } from './lib/blog'
+import { useSiteContent } from './hooks/site-content-context'
+import QueryContent from './components/QueryContent'
 
 const menuItems = [
   { label: 'Home', ariaLabel: 'Go to home page', link: '/#home' },
@@ -20,15 +20,12 @@ const menuItems = [
   { label: 'Footer', ariaLabel: 'Go to site footer', link: '/#footer' },
 ]
 
-const socialItems = socials.map((social) => ({
-  label: social.name,
-  link: social.url,
-  icon: social.icon,
-}))
-
 function App() {
+  const { socials } = useSiteContent()
+  const socialItems = socials.status === 'success' ? socials.data.map(social => ({
+    label: social.name, link: social.url, icon: social.icon?.url ?? null, darkIcon: social.darkIcon?.url ?? null,
+  })) : []
   const [pathname, setPathname] = useState(() => window.location.pathname)
-  const article = getArticleFromPath(pathname)
   const isBlogPath = pathname.startsWith('/blog/')
 
   useEffect(() => {
@@ -52,6 +49,7 @@ function App() {
         position="right"
         items={menuItems}
         socialItems={socialItems}
+        socialStatus={<QueryContent query={socials} label="social links">{() => null}</QueryContent>}
         displaySocials
         displayItemNumbering={false}
         colors={['#1c1c1e', '#2c2c2e']}
@@ -61,26 +59,13 @@ function App() {
         changeMenuColorOnOpen
       />
 
-      {article ? (
+      {isBlogPath ? (
         <>
           <div className="page-shell">
-            <BlogPostPage article={article} />
+            <ArticleRoute pathname={pathname} />
           </div>
           <AppFooter />
         </>
-      ) : isBlogPath ? (
-        <main className="relative z-10 flex min-h-screen items-center justify-center px-6 text-center">
-          <div>
-            <p className="text-sm text-muted-foreground">404</p>
-            <h1 className="mt-2 text-3xl font-semibold text-foreground">Article not found</h1>
-            <a
-              href="/#blog"
-              className="mt-6 inline-flex rounded-full border border-border px-4 py-2 text-sm text-foreground hover:bg-secondary"
-            >
-              Back to blog
-            </a>
-          </div>
-        </main>
       ) : (
         <>
           <main className="page-shell">

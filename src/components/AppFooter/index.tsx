@@ -4,7 +4,10 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import { SocialIconLink } from '@/components/SocialIconLink'
 import { AsciiArt } from '@/components/ui/ascii-art'
-import { socials } from '@/data/socials'
+import { useSiteContent } from '@/hooks/site-content-context'
+import type { Social } from '@/services/social-links/model'
+import type { SiteProfile } from '@/services/site-profile/model'
+import QueryContent from '../QueryContent'
 import './index.css'
 
 gsap.registerPlugin(ScrollTrigger, SplitText)
@@ -12,6 +15,15 @@ gsap.registerPlugin(ScrollTrigger, SplitText)
 const controlsInvertedClass = 'footer-controls-inverted'
 
 export default function AppFooter() {
+  const { profile, socials } = useSiteContent()
+  return <QueryContent query={profile} label="site profile">{data =>
+    <QueryContent query={socials} label="social links">{links =>
+      <FooterContent profile={data} socials={links} />
+    }</QueryContent>
+  }</QueryContent>
+}
+
+function FooterContent({ profile, socials }: { profile: SiteProfile; socials: Social[] }) {
   const trackRef = useRef<HTMLElement>(null)
   const footerRef = useRef<HTMLElement>(null)
   const leftHandRef = useRef<HTMLDivElement>(null)
@@ -279,7 +291,7 @@ export default function AppFooter() {
         <div className="animated-footer__top">
           <div className="animated-footer__studio">
             <p ref={introRef} className="animated-footer__intro">
-              Thanks for visiting.
+              {profile.footerMessage}
             </p>
           </div>
         </div>
@@ -345,7 +357,8 @@ export default function AppFooter() {
                 <SocialIconLink
                   name={social.name}
                   href={social.url}
-                  icon={social.icon}
+                  icon={social.icon?.url ?? null}
+                  darkIcon={social.darkIcon?.url ?? null}
                   className="animated-footer__social-link"
                 />
               </span>

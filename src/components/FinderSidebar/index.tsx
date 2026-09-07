@@ -37,7 +37,7 @@ export default function FinderSidebar({
       {/* Mobile: horizontal scroll */}
       <div className="flex md:hidden gap-1 p-2">
         {categories.map((cat) => {
-          const Icon = iconMap[cat.icon] || Folder
+          const Icon = iconMap[cat.icon ?? ''] || Folder
           return (
             <button
               key={cat.key}
@@ -64,7 +64,7 @@ export default function FinderSidebar({
         </p>
         {categories.map((cat) => {
           const isActive = activeCategory === cat.key
-          const Icon = isActive ? FolderOpen : (iconMap[cat.icon] || Folder)
+          const Icon = isActive ? FolderOpen : (iconMap[cat.icon ?? ''] || Folder)
           return (
             <button
               key={cat.key}

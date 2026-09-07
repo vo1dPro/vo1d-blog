@@ -1,7 +1,9 @@
 import { useCallback, useRef, useState } from 'react'
 
 import type { Photo } from '@/types'
-import { photos } from '@/data/photos'
+import { getPhotos } from '@/services/photos'
+import { usePublicQuery } from '@/hooks/usePublicQuery'
+import QueryContent from '@/components/QueryContent'
 import {
   ScrollVelocityContainer,
   ScrollVelocityRow,
@@ -9,15 +11,13 @@ import {
 import { useScrollVelocityCopyIndex } from '@/registry/magicui/scroll-velocity-copy-context'
 import PhotoDetailDialog from '@/components/PhotoDetailDialog'
 
-const PHOTOS_ROW_A = photos.filter((_, index) => index % 2 === 0)
-const PHOTOS_ROW_B = photos.filter((_, index) => index % 2 === 1)
-
 interface PhotoCardProps {
   photo: Photo
   onSelect: (photo: Photo, trigger: HTMLButtonElement) => void
 }
 
 function PhotoCard({ photo, onSelect }: PhotoCardProps) {
+  const [failed, setFailed] = useState(false)
   const copyIndex = useScrollVelocityCopyIndex()
   const isAccessibleCopy = copyIndex === 0
 
@@ -35,7 +35,7 @@ function PhotoCard({ photo, onSelect }: PhotoCardProps) {
       onClick={(event) => onSelect(photo, event.currentTarget)}
       className="group relative mx-2 inline-block h-32 w-48 shrink-0 overflow-hidden rounded-xl border border-border bg-card p-0 align-middle text-left shadow-sm transition-[border-color,box-shadow,opacity] duration-200 hover:border-primary/45 hover:shadow-md active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:mx-4 sm:h-40 sm:w-60"
     >
-      <img
+      {failed ? <span className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">Image unavailable</span> : <img
         src={photo.thumbnailSrc}
         alt={photo.alt}
         width={720}
@@ -43,8 +43,9 @@ function PhotoCard({ photo, onSelect }: PhotoCardProps) {
         loading="lazy"
         decoding="async"
         draggable={false}
+        onError={() => setFailed(true)}
         className="h-full w-full object-cover"
-      />
+      />}
 
       <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 pb-2 pt-8 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none">
         <span className="block truncate">{photo.title}</span>
@@ -66,6 +67,18 @@ function isFullyVisibleWithin(element: HTMLElement, container: HTMLElement) {
 }
 
 export default function PhotoVelocityGallery() {
+  const photos = usePublicQuery(getPhotos)
+  if (photos.status !== 'success' || photos.data.length === 0) return <div id="photo-gallery">
+    <QueryContent query={photos} label="photos" isEmpty={items => items.length === 0}>{() => null}</QueryContent>
+  </div>
+  return <QueryContent query={photos} label="photos" isEmpty={items => items.length === 0}>
+    {items => <PhotoGallery photos={items} />}
+  </QueryContent>
+}
+
+function PhotoGallery({ photos }: { photos: Photo[] }) {
+  const PHOTOS_ROW_A = photos.filter((_, index) => index % 2 === 0)
+  const PHOTOS_ROW_B = photos.filter((_, index) => index % 2 === 1)
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
   const [isDialogPresent, setIsDialogPresent] = useState(false)
   const returnFocusRef = useRef<HTMLElement | null>(null)

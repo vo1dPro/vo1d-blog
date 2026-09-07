@@ -1,5 +1,8 @@
 import { ArrowUpRight } from 'lucide-react'
-import { articles } from '@/data/articles'
+import { useCallback } from 'react'
+import { getRelatedArticles } from '@/services/articles'
+import { usePublicQuery } from '@/hooks/usePublicQuery'
+import QueryContent from '../QueryContent'
 import type { Article } from '@/types'
 import {
   formatArticleDate,
@@ -12,18 +15,16 @@ interface ReadMoreSectionProps {
 }
 
 export default function ReadMoreSection({ currentArticle }: ReadMoreSectionProps) {
-  const recommended = articles
-    .filter((article) => article.id !== currentArticle.id)
-    .sort((left, right) => right.date.localeCompare(left.date))
-    .slice(0, 3)
-
-  if (!recommended.length) return null
+  const load = useCallback((signal: AbortSignal) => getRelatedArticles(String(currentArticle.id), signal), [currentArticle.id])
+  const query = usePublicQuery(load)
+  if (query.status === 'success' && query.data.length === 0) return null
 
   return (
     <section className="border-t border-border p-6 lg:p-10">
       <h2 className="mb-8 text-2xl font-semibold text-foreground">Read more</h2>
+      <QueryContent query={query} label="related articles">{recommended =>
       <div className="space-y-8">
-        {recommended.map((article, index) => (
+        {recommended.map((article) => (
           <a
             key={article.id}
             href={getArticlePath(article)}
@@ -31,7 +32,7 @@ export default function ReadMoreSection({ currentArticle }: ReadMoreSectionProps
           >
             <div className="h-36 overflow-hidden rounded-lg bg-muted">
               <img
-                src={getArticleThumbnail(article, index)}
+                src={getArticleThumbnail(article)}
                 alt=""
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 loading="lazy"
@@ -57,6 +58,7 @@ export default function ReadMoreSection({ currentArticle }: ReadMoreSectionProps
           </a>
         ))}
       </div>
+      }</QueryContent>
     </section>
   )
 }

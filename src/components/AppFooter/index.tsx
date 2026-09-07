@@ -4,14 +4,19 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import { SocialIconLink } from '@/components/SocialIconLink'
 import { AsciiArt } from '@/components/ui/ascii-art'
-import { socials } from '@/data/socials'
+import { usePublicCollection, type PublicSocial } from '@/lib/public-content'
+import { ContentStatus } from '../ContentStatus'
 import './index.css'
+import { useSiteProfile } from '@/lib/site-profile'
 
 gsap.registerPlugin(ScrollTrigger, SplitText)
 
 const controlsInvertedClass = 'footer-controls-inverted'
 
 export default function AppFooter() {
+  const profile = useSiteProfile()
+  const socialContent = usePublicCollection<PublicSocial>('social-links')
+  const socials = socialContent.data ?? []
   const trackRef = useRef<HTMLElement>(null)
   const footerRef = useRef<HTMLElement>(null)
   const leftHandRef = useRef<HTMLDivElement>(null)
@@ -262,7 +267,7 @@ export default function AppFooter() {
       context?.revert()
       document.documentElement.classList.remove(controlsInvertedClass)
     }
-  }, [])
+  }, [socials.length, profile?.footerMessage])
 
   return (
     <section ref={trackRef} className="animated-footer-track">
@@ -278,8 +283,8 @@ export default function AppFooter() {
       >
         <div className="animated-footer__top">
           <div className="animated-footer__studio">
-            <p ref={introRef} className="animated-footer__intro">
-              Thanks for visiting.
+            <p key={profile?.footerMessage} ref={introRef} className="animated-footer__intro">
+              {profile?.footerMessage}
             </p>
           </div>
         </div>
@@ -339,13 +344,16 @@ export default function AppFooter() {
           >
             The
           </span>
+          <ContentStatus error={socialContent.error} loading={socialContent.data === null} empty={socialContent.data?.length === 0} retry={socialContent.retry} />
           <nav className="animated-footer__socials" aria-label="Footer social links">
             {socials.map((social) => (
               <span key={social.name} data-footer-social-icon>
                 <SocialIconLink
                   name={social.name}
                   href={social.url}
-                  icon={social.icon}
+                  icon={social.iconKey}
+                  iconUrl={social.icon?.url}
+                  darkIconUrl={social.darkIcon?.url}
                   className="animated-footer__social-link"
                 />
               </span>

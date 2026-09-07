@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { X } from 'lucide-react'
 
 import type { Photo } from '@/types'
+import ContentImage from '../ContentImage'
 
 interface PhotoDetailDialogProps {
   photo: Photo | null
@@ -70,7 +71,7 @@ function DetailPhotoImage({ photo }: { photo: Photo }) {
   }, [photo])
 
   return (
-    <img
+    <ContentImage
       src={displaySrc}
       alt={photo.alt}
       width={720}
@@ -210,7 +211,7 @@ function PhotoDetailDialogContent({
           : { type: 'spring', bounce: 0, duration: 0.32 }}
       >
         <div className="relative aspect-[3/2] min-h-0 w-full shrink overflow-hidden bg-black/90">
-          <DetailPhotoImage key={photo.id} photo={photo} />
+          <DetailPhotoImage key={`${photo.id}:${photo.src}:${photo.thumbnailSrc}`} photo={photo} />
 
           <button
             ref={closeButtonRef}
@@ -281,7 +282,8 @@ export default function PhotoDetailDialog({
 
           restoreFocusFrameRef.current = null
           onExitComplete()
-          returnFocusRef.current?.focus({
+          const target = returnFocusRef.current?.isConnected ? returnFocusRef.current : document.getElementById('photo-gallery')
+          target?.focus({
             preventScroll: true,
             focusVisible: restoreFocusVisibleRef.current,
           })

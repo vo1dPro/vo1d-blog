@@ -6,21 +6,6 @@ type IconAsset = {
   dark?: string
 }
 
-const iconAssets: Record<string, IconAsset> = {
-  github: {
-    light: '/images/icons/github-light.svg',
-    dark: '/images/icons/github-dark.svg',
-  },
-  'x-formerly-twitter': {
-    light: '/images/icons/x-formerly-twitter-light.svg',
-    dark: '/images/icons/x-formerly-twitter-dark.svg',
-  },
-  tiktok: {
-    light: '/images/icons/tiktok-light.svg',
-    dark: '/images/icons/tiktok-dark.svg',
-  },
-}
-
 function SocialIcon({ name, asset }: { name: string; asset: IconAsset }) {
   if (asset.light && asset.dark) {
     return (
@@ -45,12 +30,15 @@ function SocialIcon({ name, asset }: { name: string; asset: IconAsset }) {
 export function SocialIconLink({
   name,
   href,
-  icon,
+  iconUrl,
+  darkIconUrl,
   className = '',
 }: {
   name: string
   href: string
   icon: string
+  iconUrl?: string
+  darkIconUrl?: string
   className?: string
 }) {
   return (
@@ -59,7 +47,7 @@ export function SocialIconLink({
       name={name}
       className={`social-icon-link ${className}`}
     >
-      <SocialIcon name={name} asset={iconAssets[icon] ?? {}} />
+      <SocialIcon name={name} asset={iconUrl || darkIconUrl ? { light: iconUrl ?? darkIconUrl, dark: darkIconUrl ?? iconUrl } : {}} />
     </SocialLinkPreview>
   )
 }

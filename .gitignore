@@ -22,3 +22,34 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local credentials (only the sanitized template belongs in Git)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+
+# Local tooling, reports and private data
+.pnpm-store/
+.codex/
+.agents/
+tmp/
+temp/
+coverage/
+test-results/
+playwright-report/
+playwright/.auth/
+.auth/
+backups/
+exports/
+uploads/
+*.dump
+*.backup
+*.sqlite*
+*.db
+*.tsbuildinfo

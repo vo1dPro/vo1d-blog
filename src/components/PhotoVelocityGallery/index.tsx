@@ -1,16 +1,15 @@
 import { useCallback, useRef, useState } from 'react'
 
 import type { Photo } from '@/types'
-import { photos } from '@/data/photos'
+import { usePublicCollection, type PublicPhoto } from '@/lib/public-content'
+import { ContentStatus } from '../ContentStatus'
+import ContentImage from '../ContentImage'
 import {
   ScrollVelocityContainer,
   ScrollVelocityRow,
 } from '@/registry/magicui/scroll-based-velocity'
 import { useScrollVelocityCopyIndex } from '@/registry/magicui/scroll-velocity-copy-context'
 import PhotoDetailDialog from '@/components/PhotoDetailDialog'
-
-const PHOTOS_ROW_A = photos.filter((_, index) => index % 2 === 0)
-const PHOTOS_ROW_B = photos.filter((_, index) => index % 2 === 1)
 
 interface PhotoCardProps {
   photo: Photo
@@ -35,7 +34,7 @@ function PhotoCard({ photo, onSelect }: PhotoCardProps) {
       onClick={(event) => onSelect(photo, event.currentTarget)}
       className="group relative mx-2 inline-block h-32 w-48 shrink-0 overflow-hidden rounded-xl border border-border bg-card p-0 align-middle text-left shadow-sm transition-[border-color,box-shadow,opacity] duration-200 hover:border-primary/45 hover:shadow-md active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:mx-4 sm:h-40 sm:w-60"
     >
-      <img
+      <ContentImage
         src={photo.thumbnailSrc}
         alt={photo.alt}
         width={720}
@@ -66,7 +65,12 @@ function isFullyVisibleWithin(element: HTMLElement, container: HTMLElement) {
 }
 
 export default function PhotoVelocityGallery() {
-  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
+  const content = usePublicCollection<PublicPhoto>('photos')
+  const photos = (content.data ?? []).map((photo) => ({ ...photo, src: photo.original.url, thumbnailSrc: photo.thumbnail.url }))
+  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const selectedPhoto = photos.find((photo) => photo.id === selectedId) ?? null
+  // Reconcile during render so a withdrawn photo never survives in the dialog.
+  if (selectedId !== null && content.data !== null && !selectedPhoto) setSelectedId(null)
   const [isDialogPresent, setIsDialogPresent] = useState(false)
   const returnFocusRef = useRef<HTMLElement | null>(null)
 
@@ -81,11 +85,11 @@ export default function PhotoVelocityGallery() {
       ? canonicalTrigger
       : gallery ?? trigger
     setIsDialogPresent(true)
-    setSelectedPhoto(photo)
+    setSelectedId(photo.id)
   }, [])
 
   const handleClose = useCallback(() => {
-    setSelectedPhoto(null)
+    setSelectedId(null)
   }, [])
 
   const handleDialogExitComplete = useCallback(() => {
@@ -101,7 +105,8 @@ export default function PhotoVelocityGallery() {
         tabIndex={-1}
         className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden py-3 outline-none"
       >
-        <ScrollVelocityContainer className="w-full">
+        <ContentStatus error={content.error} loading={content.data === null} empty={content.data?.length === 0} retry={content.retry} />
+        {photos.length > 0 && <ScrollVelocityContainer className="w-full">
           <ScrollVelocityRow
             baseVelocity={6}
             direction={1}
@@ -109,23 +114,23 @@ export default function PhotoVelocityGallery() {
             paused={isDialogPresent}
             className="py-2 sm:py-3"
           >
-            {PHOTOS_ROW_A.map((photo) => (
+            {photos.filter((_, index) => index % 2 === 0).map((photo) => (
               <PhotoCard key={photo.id} photo={photo} onSelect={handleSelect} />
             ))}
           </ScrollVelocityRow>
 
-          <ScrollVelocityRow
+          {photos.length > 1 && <ScrollVelocityRow
             baseVelocity={6}
             direction={-1}
             pauseOnHover
             paused={isDialogPresent}
             className="py-2 sm:py-3"
           >
-            {PHOTOS_ROW_B.map((photo) => (
+            {photos.filter((_, index) => index % 2 === 1).map((photo) => (
               <PhotoCard key={photo.id} photo={photo} onSelect={handleSelect} />
             ))}
-          </ScrollVelocityRow>
-        </ScrollVelocityContainer>
+          </ScrollVelocityRow>}
+        </ScrollVelocityContainer>}
 
         <div className="from-background pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r to-transparent sm:w-20 lg:w-28" />
         <div className="from-background pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l to-transparent sm:w-20 lg:w-28" />

@@ -1,6 +1,9 @@
 import { ArrowDown, Sparkles } from 'lucide-react'
+import { useSiteProfile } from '@/lib/site-profile'
+import ContentImage from '../ContentImage'
 
 export default function HeroSection() {
+  const profile = useSiteProfile()
   function scrollToSkills() {
     document.querySelector('#skills')?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -19,21 +22,20 @@ export default function HeroSection() {
         <div
           className="mx-auto mb-8 w-28 h-28 rounded-full bg-foreground/5 backdrop-blur-xl border border-foreground/10 dark:bg-white/[0.08] dark:border-white/[0.12] flex items-center justify-center shadow-lg shadow-black/20"
         >
-          <Sparkles size={40} className="text-muted-foreground" />
+          {profile?.avatar ? <ContentImage src={profile.avatar.url} alt={profile.displayName} className="h-full w-full rounded-full object-cover" /> : <Sparkles size={40} className="text-muted-foreground" />}
         </div>
 
         <h1
           className="text-5xl md:text-7xl font-bold text-foreground tracking-tight leading-tight"
         >
-          Hi, I'm{' '}
+          {profile?.heroTitlePrefix}{' '}
           <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            vo1d
+            {profile?.displayName}
           </span>
         </h1>
 
         <p className="mt-6 text-xl md:text-2xl text-muted-foreground leading-relaxed">
-          A developer who loves building things with code,<br className="hidden md:block" />
-          exploring new technologies, and sharing what I learn.
+          {profile?.heroDescription}
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">

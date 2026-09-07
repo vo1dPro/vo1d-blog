@@ -1,22 +1,18 @@
 import { ArrowLeft } from 'lucide-react'
-import type { Article } from '@/types'
-import {
-  getArticleThumbnail,
-} from '@/lib/blog'
+import type { PublicArticleDetail } from '@/lib/public-content'
+import ContentImage from '../ContentImage'
+import './index.css'
+import { getArticleThumbnail } from '@/lib/blog'
 import { BlogMeta, BlogTag } from '../BlogPrimitives'
 import FlickeringGrid from '../FlickeringGrid'
 import BlogPostSidebar from '../BlogPostSidebar'
 import ReadMoreSection from '../ReadMoreSection'
 
 interface BlogPostPageProps {
-  article: Article
+  article: PublicArticleDetail
 }
 
 export default function BlogPostPage({ article }: BlogPostPageProps) {
-  const intro = article.content[0]
-  const body = article.content.slice(1, -1)
-  const conclusion = article.content.at(-1)
-
   return (
     <main className="relative z-10 min-h-screen bg-background pt-20">
       <div className="relative overflow-hidden border-y border-border bg-background">
@@ -42,7 +38,9 @@ export default function BlogPostPage({ article }: BlogPostPageProps) {
 
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             {article.tags.map((tag) => (
-              <BlogTag key={tag}>{tag}</BlogTag>
+              <a key={tag.id} href={`/?tag=${encodeURIComponent(tag.slug)}#blog`}>
+                <BlogTag>{tag.name}</BlogTag>
+              </a>
             ))}
             <BlogMeta article={article} />
           </div>
@@ -60,7 +58,7 @@ export default function BlogPostPage({ article }: BlogPostPageProps) {
         <main className="min-w-0 flex-1 overflow-hidden">
           <article>
             <div className="h-[360px] overflow-hidden border-b border-border md:h-[500px]">
-              <img
+              <ContentImage
                 src={getArticleThumbnail(article)}
                 alt=""
                 className="h-full w-full object-cover"
@@ -68,64 +66,17 @@ export default function BlogPostPage({ article }: BlogPostPageProps) {
             </div>
 
             <div className="p-6 lg:p-10">
-              <div className="mx-auto max-w-3xl">
-                <section id="overview" className="scroll-mt-24">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                    Overview
-                  </h2>
-                  <p
-                    className="mt-4 text-base leading-8 text-foreground/85"
-                    dangerouslySetInnerHTML={{ __html: intro }}
-                  />
-                </section>
-
-                <section id="key-notes" className="mt-10 scroll-mt-24">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                    Key Notes
-                  </h2>
-                  <div className="mt-4 rounded-lg border border-border bg-muted/40 p-5">
-                    <ul className="space-y-3 text-sm leading-6 text-muted-foreground">
-                      {article.tags.map((tag) => (
-                        <li key={tag}>Use this post as a reference for {tag} decisions and tradeoffs.</li>
-                      ))}
-                    </ul>
-                  </div>
-                </section>
-
-                <section id="details" className="mt-10 scroll-mt-24">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                    Details
-                  </h2>
-                  <div className="mt-4 space-y-6">
-                    {body.map((paragraph, index) => (
-                      <p
-                        key={index}
-                        className="text-base leading-8 text-foreground/85"
-                        dangerouslySetInnerHTML={{ __html: paragraph }}
-                      />
-                    ))}
-                  </div>
-                </section>
-
-                {conclusion && (
-                  <section id="conclusion" className="mt-10 scroll-mt-24">
-                    <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                      Conclusion
-                    </h2>
-                    <p
-                      className="mt-4 text-base leading-8 text-foreground/85"
-                      dangerouslySetInnerHTML={{ __html: conclusion }}
-                    />
-                  </section>
-                )}
-              </div>
+              <div
+                className="article-content mx-auto max-w-3xl"
+                dangerouslySetInnerHTML={{ __html: article.contentHtml }}
+              />
             </div>
           </article>
 
           <ReadMoreSection currentArticle={article} />
         </main>
 
-        <BlogPostSidebar />
+        <BlogPostSidebar toc={article.toc} />
       </div>
     </main>
   )

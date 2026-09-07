@@ -1,7 +1,7 @@
-import { articles } from '@/data/articles'
-import type { Article } from '@/types'
+import type { PublicArticle } from './public-content'
 
-const thumbnails = [
+// Historical explicit import source only. Public pages always use cover.url.
+export const thumbnails = [
   '/images/blog/react-components-libraries.jpg',
   '/images/blog/react-portfolio-templates.jpg',
   '/images/blog/react-landing-page-templates.jpg',
@@ -21,23 +21,24 @@ export function formatArticleDate(dateStr: string) {
   })
 }
 
-export function estimateReadTime(article: Article) {
-  const textLength = article.content.join('').replace(/<[^>]+>/g, '').length
-  return `${Math.max(3, Math.ceil(textLength / 260))} min read`
+export function estimateReadTime(article: PublicArticle) {
+  return `${article.readingTimeMinutes} min read`
 }
 
-export function getArticleThumbnail(article: Article, index = article.id) {
-  return thumbnails[(article.id - 1 + index) % thumbnails.length]
+export function getArticleThumbnail(article: PublicArticle) {
+  return article.cover.url
 }
 
-export function getArticlePath(article: Article) {
+export function getArticlePath(article: Pick<PublicArticle, 'id'>) {
   return `/blog/${article.id}`
 }
 
 export function getArticleFromPath(pathname: string) {
-  const match = pathname.match(/^\/blog\/(\d+)\/?$/)
+  const match = pathname.match(/^\/blog\/([^/]+)\/?$/)
   if (!match) return null
-
-  const id = Number(match[1])
-  return articles.find((article) => article.id === id) ?? null
+  try {
+    return decodeURIComponent(match[1])
+  } catch {
+    return null
+  }
 }

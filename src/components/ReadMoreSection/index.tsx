@@ -1,6 +1,7 @@
 import { ArrowUpRight } from 'lucide-react'
-import { articles } from '@/data/articles'
-import type { Article } from '@/types'
+import { usePublicResource, type PublicArticle, type PublicPage } from '@/lib/public-content'
+import { ContentStatus } from '../ContentStatus'
+import ContentImage from '../ContentImage'
 import {
   formatArticleDate,
   getArticlePath,
@@ -8,30 +9,27 @@ import {
 } from '@/lib/blog'
 
 interface ReadMoreSectionProps {
-  currentArticle: Article
+  currentArticle: PublicArticle
 }
 
 export default function ReadMoreSection({ currentArticle }: ReadMoreSectionProps) {
-  const recommended = articles
-    .filter((article) => article.id !== currentArticle.id)
-    .sort((left, right) => right.date.localeCompare(left.date))
-    .slice(0, 3)
-
-  if (!recommended.length) return null
+  const content = usePublicResource<PublicPage<PublicArticle>>(`articles/${currentArticle.id}/related?limit=3`)
+  const recommended = content.data?.items ?? []
 
   return (
     <section className="border-t border-border p-6 lg:p-10">
       <h2 className="mb-8 text-2xl font-semibold text-foreground">Read more</h2>
+      <ContentStatus error={content.error} loading={content.data === null} empty={recommended.length === 0 && content.data !== null} retry={content.retry} />
       <div className="space-y-8">
-        {recommended.map((article, index) => (
+        {recommended.map((article) => (
           <a
             key={article.id}
             href={getArticlePath(article)}
             className="group grid gap-4 sm:grid-cols-[272px_minmax(0,1fr)] sm:items-center"
           >
             <div className="h-36 overflow-hidden rounded-lg bg-muted">
-              <img
-                src={getArticleThumbnail(article, index)}
+              <ContentImage
+                src={getArticleThumbnail(article)}
                 alt=""
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 loading="lazy"
@@ -51,7 +49,7 @@ export default function ReadMoreSection({ currentArticle }: ReadMoreSectionProps
                 {article.summary}
               </p>
               <time className="mt-2 block text-sm font-medium text-muted-foreground">
-                {formatArticleDate(article.date)}
+                {formatArticleDate(article.publishedAt)}
               </time>
             </div>
           </a>

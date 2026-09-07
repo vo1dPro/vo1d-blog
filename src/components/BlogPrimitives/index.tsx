@@ -1,5 +1,5 @@
 import { CalendarDays, Clock3 } from 'lucide-react'
-import type { Article } from '@/types'
+import type { PublicArticle } from '@/lib/public-content'
 import { estimateReadTime, formatArticleDate } from '@/lib/blog'
 
 interface BlogTagProps {
@@ -22,7 +22,7 @@ export function BlogTag({ children, active = false }: BlogTagProps) {
 }
 
 interface BlogMetaProps {
-  article: Article
+  article: PublicArticle
   compact?: boolean
 }
 
@@ -31,7 +31,7 @@ export function BlogMeta({ article, compact = false }: BlogMetaProps) {
     <div className={`flex flex-wrap items-center gap-2 text-muted-foreground ${compact ? 'text-xs' : 'text-sm'}`}>
       <span className="inline-flex items-center gap-1">
         <CalendarDays size={compact ? 14 : 15} />
-        <time>{formatArticleDate(article.date)}</time>
+        <time dateTime={article.publishedAt}>{formatArticleDate(article.publishedAt)}</time>
       </span>
       <span>·</span>
       <span className="inline-flex items-center gap-1">

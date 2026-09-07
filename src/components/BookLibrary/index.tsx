@@ -8,16 +8,14 @@ import {
 import { ArrowDownUp, Check, ChevronDown, Search, X } from 'lucide-react'
 import type { Book } from '@/types'
 import './index.css'
-import ContentImage from '../ContentImage'
 
 interface BookLibraryProps {
   books: Book[]
 }
 
-type BookSortMode = 'default' | 'readingOrder' | 'progress' | 'title' | 'recent'
+type BookSortMode = 'readingOrder' | 'progress' | 'title' | 'recent'
 
 const sortOptions: ReadonlyArray<{ value: BookSortMode; label: string }> = [
-  { value: 'default', label: '默认顺序' },
   { value: 'readingOrder', label: '阅读顺序' },
   { value: 'progress', label: '进度' },
   { value: 'title', label: '书名排序' },
@@ -28,21 +26,9 @@ function normalizeProgress(progress: number) {
   return Math.min(100, Math.max(0, progress))
 }
 
-function formatReadingDate(value: string | null | undefined) {
-  if (!value) return null
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString('zh-CN')
-}
-
-function sourceHref(value: string | null) {
-  if (!value) return null
-  try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : null } catch { return null }
-}
-
-function getReadingTimestamp(readingTime: string | null) {
-  if (readingTime === null) return Number.NEGATIVE_INFINITY
+function getReadingTimestamp(readingTime: string) {
   const timestamp = Date.parse(readingTime)
-  return Number.isNaN(timestamp) ? Number.NEGATIVE_INFINITY : timestamp
+  return Number.isNaN(timestamp) ? 0 : timestamp
 }
 
 function compareBooks(a: Book, b: Book, sortMode: BookSortMode) {
@@ -65,15 +51,14 @@ function compareBooks(a: Book, b: Book, sortMode: BookSortMode) {
         b.readingOrder - a.readingOrder
       )
     case 'readingOrder':
-      return a.readingOrder - b.readingOrder
     default:
-      return (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.readingOrder - b.readingOrder
+      return a.readingOrder - b.readingOrder
   }
 }
 
 export default function BookLibrary({ books }: BookLibraryProps) {
   const [query, setQuery] = useState('')
-  const [sortMode, setSortMode] = useState<BookSortMode>('default')
+  const [sortMode, setSortMode] = useState<BookSortMode>('readingOrder')
   const [sortOpen, setSortOpen] = useState(false)
   const sortControlRef = useRef<HTMLDivElement>(null)
   const sortTriggerRef = useRef<HTMLButtonElement>(null)
@@ -280,7 +265,6 @@ export default function BookLibrary({ books }: BookLibraryProps) {
             <div className="book-library__grid">
               {visibleBooks.map((book) => {
                 const progress = normalizeProgress(book.progress)
-                const source = sourceHref(book.sourceUrl)
 
                 return (
                   <article
@@ -289,7 +273,7 @@ export default function BookLibrary({ books }: BookLibraryProps) {
                     key={book.id}
                   >
                     <span className="book-library__cover-wrap">
-                      <ContentImage
+                      <img
                         className="book-library__cover"
                         src={book.cover}
                         alt={`${book.title}封面`}
@@ -314,13 +298,6 @@ export default function BookLibrary({ books }: BookLibraryProps) {
                           {progress}%
                         </span>
                       </span>
-                      {source && <a className="text-xs text-muted-foreground underline" href={source} target="_blank" rel="noopener noreferrer">{book.sourceName ?? '阅读来源'}</a>}
-                      {([
-                        ['最近阅读', book.readingTime], ['开始阅读', book.startedAt], ['读完', book.finishedAt],
-                      ] as const).map(([label, date]) => {
-                        const formatted = formatReadingDate(date)
-                        return formatted ? <span key={label} className="text-xs text-muted-foreground">{label}：{formatted}</span> : null
-                      })}
                     </span>
                   </article>
                 )

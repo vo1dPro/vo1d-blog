@@ -13,8 +13,6 @@ interface StaggeredMenuSocialItem {
   label: string;
   link: string;
   icon: string;
-  iconUrl?: string;
-  darkIconUrl?: string;
 }
 
 interface StaggeredMenuProps {
@@ -314,15 +312,13 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         <div />
         <div className="sm-header-actions">
           {displaySocials && socialItems && socialItems.length > 0 && (
-            <nav className="sm-header-socials" aria-label="Social links">
+            <nav className="sm-header-socials" aria-label="vo1d Socials">
               {socialItems.map((s, i) => (
                 <SocialIconLink
                   key={s.label + i}
                   name={s.label}
                   href={s.link}
                   icon={s.icon}
-                  iconUrl={s.iconUrl}
-                  darkIconUrl={s.darkIconUrl}
                   className="sm-header-social-link"
                 />
               ))}
@@ -384,8 +380,6 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                       name={s.label}
                       href={s.link}
                       icon={s.icon}
-                  iconUrl={s.iconUrl}
-                  darkIconUrl={s.darkIconUrl}
                       className="sm-socials-link"
                     />
                   </li>

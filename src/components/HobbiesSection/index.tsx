@@ -4,14 +4,10 @@ import { BookOpen, Gamepad2, Camera, ChevronRight } from 'lucide-react'
 import BookLibrary from '../BookLibrary'
 import GameMusicPlayer from '../GameMusicPlayer'
 import PhotoVelocityGallery from '../PhotoVelocityGallery'
-import { usePublicCollection, type PublicGame, type PublicBook } from '@/lib/public-content'
-import { ContentStatus } from '../ContentStatus'
+import { books } from '../../data/books'
+import { games } from '../../data/games'
 
 export default function HobbiesSection() {
-  const bookContent = usePublicCollection<PublicBook>('books')
-  const books = (bookContent.data ?? []).map((book) => ({ ...book, cover: book.cover.url, readingTime: book.lastReadAt }))
-  const content = usePublicCollection<PublicGame>('games')
-  const games = (content.data ?? []).map((game) => ({ ...game, cover: game.cover.url, platform: game.platform ?? undefined, comment: game.comment ?? '', steamStale: game.steam?.stale ?? false, steamIncomplete: game.steam?.incomplete ?? false }))
   const [showPhotos, setShowPhotos] = useState(true)
 
   return (
@@ -25,8 +21,7 @@ export default function HobbiesSection() {
             <h3 className="text-lg font-semibold text-foreground">Books</h3>
           </div>
 
-          <ContentStatus error={bookContent.error} loading={bookContent.data === null} empty={bookContent.data?.length === 0} retry={bookContent.retry} />
-          {bookContent.data !== null && books.length > 0 && <BookLibrary books={books} />}
+          <BookLibrary books={books} />
         </div>
 
         <div className="mb-14">
@@ -35,8 +30,7 @@ export default function HobbiesSection() {
             <h3 className="text-lg font-semibold text-foreground">Games</h3>
           </div>
 
-          <ContentStatus error={content.error} loading={content.data === null} empty={content.data?.length === 0} retry={content.retry} />
-          {games.length > 0 && <GameMusicPlayer games={games} />}
+          <GameMusicPlayer games={games} />
         </div>
 
         <div>

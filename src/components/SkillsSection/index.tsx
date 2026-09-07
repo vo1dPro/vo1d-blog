@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
 import IconCloud from '../IconCloud'
 import { TextAnimate } from '../TextAnimate'
-import { usePublicCollection, type PublicSkill } from '@/lib/public-content'
-import { ContentStatus } from '../ContentStatus'
-import { useSiteProfile } from '@/lib/site-profile'
+import {
+  skillIconImages,
+  skillIconImagesDark,
+  skillIconPlaceholders,
+} from '@/data/skills'
+
+const learningNote = 'In the age of AI, learning is no longer about remembering every answer. It is about asking better questions, testing what seems convincing, and turning limitless information into understanding, creativity, and choices we can truly call our own.'
 
 function readDarkTheme() {
   const root = document.documentElement
@@ -13,9 +17,6 @@ function readDarkTheme() {
 }
 
 export default function SkillsSection() {
-  const profile = useSiteProfile()
-  const content = usePublicCollection<PublicSkill>('skills')
-  const skills = content.data ?? []
   const [isDarkTheme, setIsDarkTheme] = useState(readDarkTheme)
 
   useEffect(() => {
@@ -37,13 +38,12 @@ export default function SkillsSection() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid items-center gap-10 md:grid-cols-2 lg:gap-16">
           <div className="flex justify-center">
-            <ContentStatus error={content.error} loading={content.data === null} empty={content.data?.length === 0} retry={content.retry} />
-            {skills.some((skill) => skill.icon || skill.darkIcon) && <IconCloud
-              images={skills.flatMap((skill) => { const url = (isDarkTheme ? skill.darkIcon ?? skill.icon : skill.icon ?? skill.darkIcon)?.url; return url ? [url] : [] })}
+            <IconCloud
+              images={isDarkTheme ? skillIconImagesDark : skillIconImages}
               showControl={false}
               autoRotateDuration={5000}
               className="max-w-[440px] sm:max-w-[480px]"
-            />}
+            />
           </div>
 
           <div className="flex justify-center md:justify-start">
@@ -56,17 +56,17 @@ export default function SkillsSection() {
               once
               className="max-w-xl text-pretty text-center text-2xl font-medium leading-[1.45] tracking-tight text-foreground sm:text-3xl md:text-left lg:text-4xl"
             >
-              {profile?.learningNote ?? ''}
+              {learningNote}
             </TextAnimate>
           </div>
         </div>
 
         <div className="sr-only">
           <p>
-            Current technology stack.
+            The icons are temporary visual placeholders and will be updated to match the actual technology stack.
           </p>
-          <ul aria-label="Technology icon list">
-            {skills.map((icon) => (
+          <ul aria-label="Temporary technology icon list">
+            {skillIconPlaceholders.map((icon) => (
               <li key={icon.name}>{icon.name}</li>
             ))}
           </ul>

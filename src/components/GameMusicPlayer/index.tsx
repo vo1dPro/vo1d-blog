@@ -170,7 +170,7 @@ function formatStatusTime(date: Date) {
 }
 
 function formatPlatform(game: Game) {
-  return game.platform ?? '未设置平台'
+  return game.platform ?? 'undefined'
 }
 
 function clampColor(value: number) {
@@ -235,7 +235,6 @@ function rgbToHsl(red: number, green: number, blue: number) {
 function extractCoverPalette(src: string) {
   return new Promise<CoverPalette>((resolve, reject) => {
     const image = new Image()
-    image.crossOrigin = 'anonymous'
     image.onload = () => {
       const canvas = document.createElement('canvas')
       const size = 36
@@ -339,16 +338,8 @@ function CoverTile({ game, compact = false }: { game: Game; compact?: boolean })
   )
 }
 
-export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerProps) {
-  const games = useMemo(
-    () => [...sourceGames].sort((left, right) =>
-      right.playtimeHours - left.playtimeHours
-      || right.rating - left.rating
-      || left.title.localeCompare(right.title, 'zh-Hans-CN'),
-    ),
-    [sourceGames],
-  )
-  const [currentGameId, setCurrentGameId] = useState<number | null>(() => games[0].id)
+export default function GameMusicPlayer({ games }: GameMusicPlayerProps) {
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [mode, setMode] = useState<PlayerMode>('cover')
   const [likedIds, setLikedIds] = useState<Set<number>>(new Set())
   const [screenAwake, setScreenAwake] = useState(false)
@@ -370,14 +361,25 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
     pressedIndex: null as number | null,
   })
 
-  const currentIndex = Math.max(0, games.findIndex((item) => item.id === currentGameId))
   const game = games[currentIndex]
   const isLiked = likedIds.has(game.id)
   const statusTime = formatStatusTime(statusDate)
   const libraryGames = useMemo(
     () => games
       .map((item, index) => ({ item, index }))
-      .filter(({ index }) => index !== currentIndex),
+      .filter(({ index }) => index !== currentIndex)
+      .sort((left, right) => {
+        const hoursDiff = right.item.playtimeHours - left.item.playtimeHours
+        if (hoursDiff !== 0) return hoursDiff
+
+        const ratingDiff = right.item.rating - left.item.rating
+        if (ratingDiff !== 0) return ratingDiff
+
+        const titleDiff = left.item.title.localeCompare(right.item.title, 'zh-Hans-CN')
+        if (titleDiff !== 0) return titleDiff
+
+        return left.index - right.index
+      }),
     [currentIndex, games],
   )
   const totalGameHours = useMemo(
@@ -456,7 +458,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
 
   function selectGame(index: number) {
     if (libraryDragRef.current.suppressClick) return
-    setCurrentGameId(games[index]?.id ?? null)
+    setCurrentIndex(index)
   }
 
   function handleLibraryPointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -503,7 +505,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
       event.currentTarget.releasePointerCapture(event.pointerId)
     }
     if (!drag.moved && pressedIndex !== null) {
-      setCurrentGameId(games[pressedIndex]?.id ?? null)
+      setCurrentIndex(pressedIndex)
     }
     window.setTimeout(() => {
       libraryDragRef.current.suppressClick = false
@@ -511,18 +513,11 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
   }
 
   function nextGame() {
-    stepGame(1)
+    setCurrentIndex((index) => (index + 1) % games.length)
   }
 
   function prevGame() {
-    stepGame(-1)
-  }
-
-  function stepGame(direction: 1 | -1) {
-    setCurrentGameId((id) => {
-      const index = Math.max(0, games.findIndex((item) => item.id === id))
-      return games[(index + direction + games.length) % games.length].id
-    })
+    setCurrentIndex((index) => (index - 1 + games.length) % games.length)
   }
 
   function toggleLike() {
@@ -674,7 +669,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
               <span style={{ width: `${progress}%` }} />
             </div>
             <div className="game-time-row">
-              <span title={game.steamIncomplete ? '部分账号暂无可见快照，显示可用账号小计' : game.steamStale ? '包含尚未更新的 Steam 快照' : '已汇总所有可用账号'}>{formatHours(game.playtimeHours)}{game.steamIncomplete ? ' · 部分账号' : game.steamStale ? ' · 待更新' : ''}</span>
+              <span>{formatHours(game.playtimeHours)}</span>
               <span>{formatHours(totalGameHours)}</span>
             </div>
           </div>
@@ -694,7 +689,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
           <div className="game-volume-area">
             <Volume size={19} fill="currentColor" strokeWidth={0} />
             <div className="game-slider">
-              <span style={{ width: `${(game.likeLevel / 5) * 100}%` }} />
+              <span style={{ width: `${game.likeLevel}%` }} />
             </div>
             <Volume2 size={24} />
           </div>

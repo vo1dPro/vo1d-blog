@@ -20,13 +20,12 @@ export interface Book {
   author: string
   cover: string
   accent: string
-  sourceName: string | null
-  sourceUrl: string | null
+  sourceName: string
+  sourceUrl: string
   readingOrder: number
-  sortOrder?: number
-  readingTime: string | null
-  startedAt?: string | null
-  finishedAt?: string | null
+  readingTime: string
+  startedAt?: string
+  finishedAt?: string
   progress: number
 }
 
@@ -36,8 +35,6 @@ export interface Game {
   platform?: string
   cover: string
   rating: number
-  steamStale?: boolean
-  steamIncomplete?: boolean
   playtimeHours: number
   likeLevel: number
   comment: string

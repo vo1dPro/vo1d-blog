@@ -1,6 +1,6 @@
 # vo1d-blog
 
-React、TypeScript、Vite 博客展示端。目录 D:\Code_Project\blog\vo1d-blog，后端与管理后台在同级目录。
+React、TypeScript、Vite 博客展示端。目录 vo1d-blog，后端与管理后台在同级目录。
 
 ## 数据与实现
 
@@ -30,7 +30,7 @@ Vite 出现 504 Outdated Optimize Dep 时，先停止旧服务，再运行 pnpm 
 
 已移除 src/data 下六个静态文件和 115 个业务/冗余图片图标文件。原组件内业务文案也已存档。
 
-归档目录：C:\Users\vo1d\Desktop\博客联动备份-20260908-001721。
+归档目录：系统桌面目录下的 `博客联动备份-20260908-001721`。
 
 static-data-before.zip 保存原目录结构；static-manifest.json 保存源文件大小及 SHA-256；removed-media.json 列出删除的媒体。压缩包中的 134 个数据/图片文件已逐项校验，装饰图标和页脚图片仍保留在前端。source-before.zip 另保存实施前的三项目源码。
 

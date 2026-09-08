@@ -339,7 +339,17 @@ function CoverTile({ game, compact = false }: { game: Game; compact?: boolean })
   )
 }
 
-export default function GameMusicPlayer({ games }: GameMusicPlayerProps) {
+export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerProps) {
+  // The displayed list and transport buttons must use the same playtime order.
+  const games = useMemo(() => [...sourceGames].sort((left, right) => {
+    const hoursDiff = right.playtimeHours - left.playtimeHours
+    if (hoursDiff !== 0) return hoursDiff
+
+    const ratingDiff = right.rating - left.rating
+    if (ratingDiff !== 0) return ratingDiff
+
+    return left.title.localeCompare(right.title, 'zh-Hans-CN')
+  }), [sourceGames])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [mode, setMode] = useState<PlayerMode>('cover')
   const [likedIds, setLikedIds] = useState<Set<number>>(new Set())
@@ -368,19 +378,7 @@ export default function GameMusicPlayer({ games }: GameMusicPlayerProps) {
   const libraryGames = useMemo(
     () => games
       .map((item, index) => ({ item, index }))
-      .filter(({ index }) => index !== currentIndex)
-      .sort((left, right) => {
-        const hoursDiff = right.item.playtimeHours - left.item.playtimeHours
-        if (hoursDiff !== 0) return hoursDiff
-
-        const ratingDiff = right.item.rating - left.item.rating
-        if (ratingDiff !== 0) return ratingDiff
-
-        const titleDiff = left.item.title.localeCompare(right.item.title, 'zh-Hans-CN')
-        if (titleDiff !== 0) return titleDiff
-
-        return left.index - right.index
-      }),
+      .filter(({ index }) => index !== currentIndex),
     [currentIndex, games],
   )
   const totalGameHours = useMemo(

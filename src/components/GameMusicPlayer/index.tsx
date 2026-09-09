@@ -360,6 +360,8 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
   const [shouldRenderModels, setShouldRenderModels] = useState(() =>
     window.matchMedia(DESKTOP_MODELS_QUERY).matches,
   )
+  const [modelsRequested, setModelsRequested] = useState(false)
+  const showcaseRef = useRef<HTMLDivElement | null>(null)
   const libraryListRef = useRef<HTMLDivElement | null>(null)
   const activePaletteRef = useRef(DEFAULT_PALETTE)
   const paletteFadeTimerRef = useRef<number | null>(null)
@@ -404,6 +406,19 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
     mediaQuery.addEventListener('change', updateModelVisibility)
     return () => mediaQuery.removeEventListener('change', updateModelVisibility)
   }, [])
+
+  useEffect(() => {
+    const showcase = showcaseRef.current
+    if (!showcase || !shouldRenderModels || modelsRequested) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting) {
+        setModelsRequested(true)
+        observer.disconnect()
+      }
+    }, { rootMargin: '300px' })
+    observer.observe(showcase)
+    return () => observer.disconnect()
+  }, [shouldRenderModels, modelsRequested])
 
   useEffect(() => () => {
     if (paletteFadeTimerRef.current !== null) {
@@ -536,9 +551,9 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
   const previousPaletteStyle = previousPalette ? paletteToStyle(previousPalette) : undefined
 
   return (
-    <div className="game-showcase" aria-label="Game collection display">
+    <div ref={showcaseRef} className="game-showcase" aria-label="Game collection display">
       <div className="game-phone-stage">
-        {shouldRenderModels && (
+        {shouldRenderModels && modelsRequested && (
           <Suspense fallback={null}>
             <XboxControllerModel className="game-controller-stage" />
             <GlockModel className="game-glock-stage" />

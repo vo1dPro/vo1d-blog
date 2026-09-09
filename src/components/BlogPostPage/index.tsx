@@ -17,9 +17,20 @@ interface BlogPostPageProps {
 export default function BlogPostPage({ article }: BlogPostPageProps) {
   useEffect(() => {
     const previous = document.title
+    const existingDescription = document.querySelector<HTMLMetaElement>('meta[name="description"]')
+    const description = existingDescription ?? document.createElement('meta')
+    const previousDescription = existingDescription?.getAttribute('content') ?? null
+    description.name = 'description'
+    description.content = article.seoDescription ?? article.summary
+    if (!existingDescription) document.head.append(description)
     document.title = article.seoTitle ?? article.title
-    return () => { document.title = previous }
-  }, [article.seoTitle, article.title])
+    return () => {
+      document.title = previous
+      if (!existingDescription) description.remove()
+      else if (previousDescription === null) description.removeAttribute('content')
+      else description.content = previousDescription
+    }
+  }, [article.seoTitle, article.title, article.seoDescription, article.summary])
 
   return (
     <main className="relative z-10 min-h-screen bg-background pt-20">
@@ -61,7 +72,7 @@ export default function BlogPostPage({ article }: BlogPostPageProps) {
       </div>
 
       <div className="relative mx-auto flex max-w-7xl border-x border-border bg-background">
-        <main className="min-w-0 flex-1 overflow-hidden">
+        <div className="min-w-0 flex-1 overflow-hidden">
           <article>
             <div className="h-[360px] overflow-hidden border-b border-border md:h-[500px]">
               <img
@@ -79,7 +90,7 @@ export default function BlogPostPage({ article }: BlogPostPageProps) {
           </article>
 
           <ReadMoreSection currentArticle={article} />
-        </main>
+        </div>
 
         <BlogPostSidebar toc={article.toc} />
       </div>

@@ -4,6 +4,7 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { animateWhileVisible } from "@/lib/visible-animation";
 import "./index.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -170,9 +171,7 @@ export default function GlockModel({ className = "" }: GlockModelProps) {
     if (!root || !canvas) return;
     const container = root;
 
-    let frameId = 0;
     let disposed = false;
-    const clock = new THREE.Clock();
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(BASE_CAMERA_FOV, 1, 0.1, 100);
     const renderer = new THREE.WebGLRenderer({
@@ -278,8 +277,7 @@ export default function GlockModel({ className = "" }: GlockModelProps) {
       },
     );
 
-    function render() {
-      const elapsed = clock.getElapsedTime();
+    function render(elapsed: number) {
       const interaction = interactionRef.current;
 
       interaction.currentPitch +=
@@ -303,14 +301,14 @@ export default function GlockModel({ className = "" }: GlockModelProps) {
         GLOCK_VIEW.position.y + Math.sin(elapsed * 1.18) * 0.15;
 
       renderer.render(scene, camera);
-      frameId = window.requestAnimationFrame(render);
+
     }
 
-    render();
+    const stopAnimation = animateWhileVisible(container.closest(".game-showcase") ?? container, render);
 
     return () => {
       disposed = true;
-      window.cancelAnimationFrame(frameId);
+      stopAnimation();
       resizeObserver.disconnect();
       disposeObject(scene);
       renderer.dispose();

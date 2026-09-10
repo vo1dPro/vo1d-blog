@@ -2,6 +2,13 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      try {
+        const isLight = localStorage.getItem('theme') === 'light'
+        document.documentElement.classList.toggle('dark', !isLight)
+        document.documentElement.classList.toggle('light', isLight)
+      } catch { /* Keep the default dark theme when storage is unavailable. */ }
+    </script>
     <link rel="icon" type="image/jpeg" href="/favicon.jpg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,7 +18,7 @@
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>vo1d Blog</title>
-    <style>body { background: #000000; margin: 0; }</style>
+    <style>body { background: #000; margin: 0; } html.light body { background: #fff; }</style>
   </head>
   <body>
     <div id="root"></div>

@@ -11,6 +11,7 @@ import StaggeredMenu from './components/StaggeredMenu'
 import { SmoothScroll } from './components/SmoothScroll'
 import { useSiteContent } from './hooks/site-content-context'
 import QueryContent from './components/QueryContent'
+import OpeningSequence from './components/OpeningSequence'
 
 const menuItems = [
   { label: 'Home', ariaLabel: 'Go to home page', link: '/#home' },
@@ -35,49 +36,51 @@ function App() {
   }, [])
 
   return (
-    <div className="relative isolate min-h-screen bg-background cursor-none">
-      <SmoothScroll />
-      <SmoothCursor />
+    <OpeningSequence>
+      <div className="relative isolate min-h-screen bg-background cursor-none">
+        <SmoothScroll />
+        <SmoothCursor />
 
-      <div className="theme-toggle-shell fixed top-5 left-5 z-[60]">
-        <AnimatedThemeToggler className="!text-white hover:!bg-white/10" />
+        <div className="theme-toggle-shell fixed top-5 left-5 z-[60]">
+          <AnimatedThemeToggler className="!text-white hover:!bg-white/10" />
+        </div>
+
+        <StaggeredMenu
+          className="site-menu-shell"
+          isFixed
+          position="right"
+          items={menuItems}
+          socialItems={socialItems}
+          socialStatus={<QueryContent query={socials} label="social links">{() => null}</QueryContent>}
+          displaySocials
+          displayItemNumbering={false}
+          colors={['#1c1c1e', '#2c2c2e']}
+          accentColor="var(--primary, #0a84ff)"
+          menuButtonColor="#ffffff"
+          openMenuButtonColor="var(--card-foreground)"
+          changeMenuColorOnOpen
+        />
+
+        {isBlogPath ? (
+          <>
+            <div className="page-shell">
+              <ArticleRoute pathname={pathname} />
+            </div>
+            <AppFooter />
+          </>
+        ) : (
+          <>
+            <main className="page-shell">
+              <HeroSection />
+              <SkillsSection />
+              <BlogSection />
+              <HobbiesSection />
+            </main>
+            <AppFooter />
+          </>
+        )}
       </div>
-
-      <StaggeredMenu
-        className="site-menu-shell"
-        isFixed
-        position="right"
-        items={menuItems}
-        socialItems={socialItems}
-        socialStatus={<QueryContent query={socials} label="social links">{() => null}</QueryContent>}
-        displaySocials
-        displayItemNumbering={false}
-        colors={['#1c1c1e', '#2c2c2e']}
-        accentColor="var(--primary, #0a84ff)"
-        menuButtonColor="#ffffff"
-        openMenuButtonColor="var(--card-foreground)"
-        changeMenuColorOnOpen
-      />
-
-      {isBlogPath ? (
-        <>
-          <div className="page-shell">
-            <ArticleRoute pathname={pathname} />
-          </div>
-          <AppFooter />
-        </>
-      ) : (
-        <>
-          <main className="page-shell">
-            <HeroSection />
-            <SkillsSection />
-            <BlogSection />
-            <HobbiesSection />
-          </main>
-          <AppFooter />
-        </>
-      )}
-    </div>
+    </OpeningSequence>
   )
 }
 

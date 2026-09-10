@@ -1,0 +1,92 @@
+.opening-sequence {
+  background: #fff;
+}
+
+.dark .opening-sequence {
+  background: #000;
+}
+
+.opening-sequence[data-complete='false'] > .opening-content {
+  opacity: 0;
+}
+
+.opening-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow: hidden;
+  background: #fff;
+  color: #000;
+  touch-action: none;
+  user-select: none;
+}
+
+.dark .opening-screen {
+  background: #000;
+  color: #fff;
+}
+
+.opening-number {
+  position: absolute;
+  left: max(clamp(24px, 3.2vw, 64px), env(safe-area-inset-left));
+  bottom: max(clamp(28px, 5.5vh, 64px), env(safe-area-inset-bottom));
+  min-width: 2ch;
+  height: 1em;
+  font-family: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(80px, 8vw, 144px);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.065em;
+}
+
+.opening-typing {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.opening-typing-cursor {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 0.035em;
+  height: 0.73em;
+  margin-left: 0.1em;
+  background: currentColor;
+  animation: opening-cursor-blink 0.8s step-end infinite;
+}
+
+.opening-typing[data-typing='true'] .opening-typing-cursor {
+  animation: none;
+}
+
+@keyframes opening-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.opening-bar {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: clamp(4px, 0.45vw, 7px);
+  will-change: transform;
+}
+
+.opening-bar-fill {
+  width: 100%;
+  height: 100%;
+  background: currentColor;
+  transform: scaleY(0);
+  transform-origin: center bottom;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opening-typing-cursor {
+    animation: none;
+  }
+
+  .opening-bar,
+  .opening-bar-fill {
+    will-change: auto;
+  }
+}

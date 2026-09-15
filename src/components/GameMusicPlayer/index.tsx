@@ -1,5 +1,5 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties, PointerEvent } from 'react'
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import type { CSSProperties, MouseEvent, PointerEvent } from 'react'
 import {
   Gamepad2,
   Heart,
@@ -361,6 +361,8 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
     window.matchMedia(DESKTOP_MODELS_QUERY).matches,
   )
   const [modelsRequested, setModelsRequested] = useState(false)
+  const [playerScale, setPlayerScale] = useState(1)
+  const phoneFrameRef = useRef<HTMLDivElement | null>(null)
   const showcaseRef = useRef<HTMLDivElement | null>(null)
   const libraryListRef = useRef<HTMLDivElement | null>(null)
   const activePaletteRef = useRef(DEFAULT_PALETTE)
@@ -371,7 +373,6 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
     startY: 0,
     scrollTop: 0,
     suppressClick: false,
-    pressedIndex: null as number | null,
   })
 
   const game = games[currentIndex]
@@ -392,6 +393,22 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
     if (!totalGameHours) return 0
     return Math.min(100, Math.round((game.playtimeHours / totalGameHours) * 100))
   }, [game.playtimeHours, totalGameHours])
+
+  useLayoutEffect(() => {
+    const frame = phoneFrameRef.current
+    if (!frame) return
+
+    // Keep the player on its 368px design canvas as the phone frame resizes.
+    const updateScale = (width: number) => {
+      if (width > 0) setPlayerScale(width / 368)
+    }
+    updateScale(frame.getBoundingClientRect().width)
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) updateScale(entry.contentRect.width)
+    })
+    observer.observe(frame)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const timer = window.setInterval(() => setStatusDate(new Date()), 30_000)
@@ -470,18 +487,14 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
     }
   }, [game.cover])
 
-  function selectGame(index: number) {
-    if (libraryDragRef.current.suppressClick) return
+  function selectGame(index: number, event: MouseEvent<HTMLButtonElement>) {
+    // Keyboard activation has no pointer gesture and must still work after a drag.
+    if (event.detail !== 0 && libraryDragRef.current.suppressClick) return
     setCurrentIndex(index)
   }
 
   function handleLibraryPointerDown(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType === 'mouse' && event.button !== 0) return
-
-    const row = (event.target as HTMLElement).closest<HTMLButtonElement>('.game-library-row')
-    const pressedIndex = row?.dataset.gameIndex
-      ? Number(row.dataset.gameIndex)
-      : null
 
     libraryDragRef.current = {
       active: true,
@@ -489,9 +502,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
       startY: event.clientY,
       scrollTop: event.currentTarget.scrollTop,
       suppressClick: false,
-      pressedIndex: Number.isFinite(pressedIndex) ? pressedIndex : null,
     }
-    event.currentTarget.setPointerCapture(event.pointerId)
   }
 
   function handleLibraryPointerMove(event: PointerEvent<HTMLDivElement>) {
@@ -502,28 +513,26 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
     if (Math.abs(deltaY) > 8) {
       drag.moved = true
       drag.suppressClick = true
-      event.preventDefault()
     }
 
-    event.currentTarget.scrollTop = drag.scrollTop - deltaY
+    // Touch uses native scrolling. Capture only an actual mouse drag so a tap's
+    // click keeps its original button target, without reordering on pointerup.
+    if (drag.moved && event.pointerType === 'mouse') {
+      event.currentTarget.setPointerCapture(event.pointerId)
+      event.preventDefault()
+      event.currentTarget.scrollTop = drag.scrollTop - deltaY / playerScale
+    }
   }
 
   function handleLibraryPointerEnd(event: PointerEvent<HTMLDivElement>) {
     const drag = libraryDragRef.current
     if (!drag.active) return
 
-    const pressedIndex = drag.pressedIndex
     drag.active = false
-    drag.pressedIndex = null
+    if (event.type === 'pointercancel') drag.suppressClick = true
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId)
     }
-    if (!drag.moved && pressedIndex !== null) {
-      setCurrentIndex(pressedIndex)
-    }
-    window.setTimeout(() => {
-      libraryDragRef.current.suppressClick = false
-    }, 0)
   }
 
   function nextGame() {
@@ -560,7 +569,12 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
           </Suspense>
         )}
 
-        <div className="iphone-device-frame" aria-label="iPhone 17 game player mockup">
+        <div
+          ref={phoneFrameRef}
+          className="iphone-device-frame"
+          style={{ '--game-player-scale': playerScale } as CSSProperties}
+          aria-label="iPhone 17 game player mockup"
+        >
           <div className="iphone-screen-slot">
             <div
               className={`game-player-shell game-player-${mode} ${screenAwake ? '' : 'is-screen-off'}`}
@@ -663,8 +677,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
                     key={item.id}
                     type="button"
                     className="game-library-row"
-                    data-game-index={index}
-                    onClick={() => selectGame(index)}
+                    onClick={(event) => selectGame(index, event)}
                   >
                     <CoverTile game={item} compact />
                     <span className="game-library-text">

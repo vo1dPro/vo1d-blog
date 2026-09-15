@@ -45,7 +45,8 @@
   top: calc(2.18% - 1px);
   width: calc(89.95% + 2px);
   height: calc(95.63% + 2px);
-  overflow: hidden;
+  /* Clip the scaled canvas without creating a scrollable screen. */
+  overflow: clip;
   border-radius: 14.31% / 6.61%;
   background: #020202;
 }
@@ -172,9 +173,12 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
+  /* Scale the entire design together; fixed controls must not squeeze the cover/title. */
+  width: calc(100% / var(--game-player-scale, 1));
+  height: calc(100% / var(--game-player-scale, 1));
+  transform: scale(var(--game-player-scale, 1));
+  transform-origin: top left;
+  overflow: clip;
   padding: 15px 24px 17px;
   border-radius: inherit;
   color: var(--player-ink);
@@ -975,17 +979,5 @@
 @media (max-width: 420px) {
   .iphone-device-frame {
     width: min(100%, 338px);
-  }
-
-  .game-player-shell {
-    padding-inline: 20px;
-  }
-
-  .game-track-title {
-    font-size: 18px;
-  }
-
-  .game-review-main {
-    font-size: 22px;
   }
 }

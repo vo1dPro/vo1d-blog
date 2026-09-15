@@ -13,6 +13,7 @@ export interface BookResponse extends OrderedContent {
   startedAt: string | null
   finishedAt: string | null
   progress: number
+  readingNotes: string
 }
 
 export interface Book extends Omit<BookResponse, 'cover'> {

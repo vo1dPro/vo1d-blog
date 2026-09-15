@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useCallback,
   useMemo,
   useRef,
   useState,
@@ -7,6 +8,7 @@ import {
 } from 'react'
 import { ArrowDownUp, Check, ChevronDown, Search, X } from 'lucide-react'
 import type { Book } from '@/types'
+import BookReaderDialog from '../BookReaderDialog'
 import './index.css'
 
 interface BookLibraryProps {
@@ -61,6 +63,8 @@ export default function BookLibrary({ books }: BookLibraryProps) {
   const [query, setQuery] = useState('')
   const [sortMode, setSortMode] = useState<BookSortMode>('readingOrder')
   const [sortOpen, setSortOpen] = useState(false)
+  const [selectedBook, setSelectedBook] = useState<{ book: Book; trigger: HTMLButtonElement; cover: HTMLImageElement } | null>(null)
+  const closeReader = useCallback(() => setSelectedBook(null), [])
   const sortControlRef = useRef<HTMLDivElement>(null)
   const sortTriggerRef = useRef<HTMLButtonElement>(null)
   const sortOptionRefs = useRef<Array<HTMLButtonElement | null>>([])
@@ -156,7 +160,7 @@ export default function BookLibrary({ books }: BookLibraryProps) {
           <span>book</span>
         </div>
 
-        <ul className="book-library__sort-list">
+        <ul className="book-library__sort-list" data-lenis-prevent>
           {sortedBooks.map((book) => (
             <li className="book-library__sort-item" key={book.id}>
               <button
@@ -261,17 +265,24 @@ export default function BookLibrary({ books }: BookLibraryProps) {
           </div>
         </header>
 
-        <div className="book-library__content">
+        <div className="book-library__content" data-lenis-prevent>
           {visibleBooks.length > 0 ? (
             <div className="book-library__grid">
               {visibleBooks.map((book) => {
                 const progress = normalizeProgress(book.progress)
 
                 return (
-                  <article
+                  <button
+                    type="button"
                     id={`book-card-${book.id}`}
-                    className="book-library__card"
+                    className={`book-library__card${selectedBook?.book.id === book.id ? ' is-reading' : ''}`}
                     key={book.id}
+                    aria-label={`打开《${book.title}》的读书心得`}
+                    aria-haspopup="dialog"
+                    onClick={(event) => {
+                      const cover = event.currentTarget.querySelector('img')
+                      if (cover) setSelectedBook({ book, trigger: event.currentTarget, cover })
+                    }}
                   >
                     <span className="book-library__cover-wrap">
                       <img
@@ -300,7 +311,7 @@ export default function BookLibrary({ books }: BookLibraryProps) {
                         </span>
                       </span>
                     </span>
-                  </article>
+                  </button>
                 )
               })}
             </div>
@@ -313,6 +324,15 @@ export default function BookLibrary({ books }: BookLibraryProps) {
           )}
         </div>
       </section>
+      {selectedBook && (
+        <BookReaderDialog
+          key={selectedBook.book.id}
+          book={selectedBook.book}
+          trigger={selectedBook.trigger}
+          sourceCover={selectedBook.cover}
+          onClosed={closeReader}
+        />
+      )}
     </div>
   )
 }

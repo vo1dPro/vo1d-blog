@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import TypingAnimation from '../TypingAnimation'
+import NumberTicker from '../NumberTicker'
 import './index.css'
 
 // Choreographed milestones give resources time to load; they are not byte counts.
@@ -12,7 +12,11 @@ const PROGRESS_STEPS = [
   { value: 59, at: 1.6 },
   { value: 96, at: 2.55 },
   { value: 99, at: 3.4 },
+  { value: 100, at: 3.75 },
 ] as const
+
+// A critically damped spring settles each milestone within the short opening.
+const TICKER_SPRING = { damping: 40, stiffness: 400 }
 
 export default function OpeningSequence({ children }: { children: ReactNode }) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -21,11 +25,19 @@ export default function OpeningSequence({ children }: { children: ReactNode }) {
   const barRef = useRef<HTMLDivElement>(null)
   const fillRef = useRef<HTMLDivElement>(null)
   const numberRef = useRef<HTMLDivElement>(null)
+  const exitingRef = useRef(false)
   const [progress, setProgress] = useState(0)
   const [complete, setComplete] = useState(false)
   const [reducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
 
+  const syncProgressBar = useCallback((value: number) => {
+    if (fillRef.current && !exitingRef.current) {
+      fillRef.current.style.transform = `scaleY(${Math.min(100, Math.max(0, value)) / 100})`
+    }
+  }, [])
+
   useEffect(() => {
+    exitingRef.current = false
     const html = document.documentElement
     const previousOverflow = html.style.overflow
     const previousBodyOverflow = document.body.style.overflow
@@ -49,13 +61,13 @@ export default function OpeningSequence({ children }: { children: ReactNode }) {
 
       for (const step of PROGRESS_STEPS.slice(1)) {
         timeline.call(() => setProgress(step.value), [], step.at)
-        timeline.to(fillRef.current, {
-          scaleY: step.value / 100,
-          duration: reducedMotion ? 0 : 0.65,
-        }, step.at)
+        if (reducedMotion) {
+          timeline.set(fillRef.current, { scaleY: step.value / 100 }, step.at)
+        }
       }
 
       timeline.addLabel('exit', 4.05)
+      timeline.call(() => { exitingRef.current = true }, [], 'exit')
       timeline.to(fillRef.current, { scaleY: 1, duration: 0.15 }, 'exit')
       timeline.to(barRef.current, {
         yPercent: reducedMotion ? 0 : -105,
@@ -98,7 +110,12 @@ export default function OpeningSequence({ children }: { children: ReactNode }) {
           <span className="sr-only" role="status">正在准备页面，请稍候。</span>
           <div ref={numberRef} className="opening-number" aria-hidden="true">
             {reducedMotion ? String(progress).padStart(2, '0') : (
-              <TypingAnimation>{String(progress).padStart(2, '0')}</TypingAnimation>
+              <NumberTicker
+                value={progress}
+                minimumIntegerDigits={2}
+                springOptions={TICKER_SPRING}
+                onValueChange={syncProgressBar}
+              />
             )}
           </div>
           <div ref={barRef} className="opening-bar" aria-hidden="true">

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import type { FC } from "react"
 import { motion, useSpring } from "motion/react"
+import { createPortal } from "react-dom"
 
 interface Position {
   x: number
@@ -19,8 +20,6 @@ export interface SmoothCursorProps {
 
 const DESKTOP_POINTER_QUERY = "(any-hover: hover) and (any-pointer: fine)"
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)"
-const FOOTER_TRACK_SELECTOR = ".animated-footer-track"
-const CURSOR_VISUAL_RADIUS = 19
 
 function isTrackablePointer(pointerType: string) {
   return pointerType !== "touch"
@@ -104,8 +103,21 @@ export function SmoothCursor({
   const accumulatedRotation = useRef(0)
   const [isEnabled, setIsEnabled] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
-  const [usesFooterBlend, setUsesFooterBlend] = useState(false)
   const [isReducedMotion, setIsReducedMotion] = useState(false)
+  const [cursorHost, setCursorHost] = useState<HTMLElement | null>(null)
+
+  useEffect(() => {
+    // Native modal dialogs occupy the browser top layer, above every z-index.
+    // Keep the same cursor springs while moving its visual into that layer.
+    const updateHost = () => {
+      const modals = Array.from(document.querySelectorAll<HTMLDialogElement>('dialog:modal'))
+      setCursorHost(modals.at(-1) ?? document.body)
+    }
+    const observer = new MutationObserver(updateHost)
+    observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['open'] })
+    updateHost()
+    return () => observer.disconnect()
+  }, [])
 
   const cursorX = useSpring(0, springConfig)
   const cursorY = useSpring(0, springConfig)
@@ -144,20 +156,9 @@ export function SmoothCursor({
   }, [])
 
   useEffect(() => {
-    let footerTrack = document.querySelector<HTMLElement>(FOOTER_TRACK_SELECTOR)
     let frameId = 0
 
-    const updateFooterBlend = (cursorCenterY = cursorY.get()) => {
-      if (!footerTrack?.isConnected) {
-        footerTrack = document.querySelector<HTMLElement>(FOOTER_TRACK_SELECTOR)
-      }
-
-      const boundaryY = footerTrack?.getBoundingClientRect().top
-      setUsesFooterBlend(
-        boundaryY !== undefined &&
-          cursorCenterY + CURSOR_VISUAL_RADIUS >= boundaryY
-      )
-
+    const updatePointerVisibility = () => {
       if (lastUpdateTime.current > 0) {
         const topElement = document.elementFromPoint(
           lastMousePos.current.x,
@@ -174,14 +175,14 @@ export function SmoothCursor({
       if (frameId) return
       frameId = requestAnimationFrame(() => {
         frameId = 0
-        updateFooterBlend()
+        updatePointerVisibility()
       })
     }
 
-    const unsubscribeCursorY = cursorY.on("change", updateFooterBlend)
+    const unsubscribeCursorY = cursorY.on("change", updatePointerVisibility)
     window.addEventListener("scroll", scheduleUpdate, { passive: true })
     window.addEventListener("resize", scheduleUpdate)
-    updateFooterBlend()
+    updatePointerVisibility()
 
     return () => {
       unsubscribeCursorY()
@@ -268,11 +269,13 @@ export function SmoothCursor({
     }
   }, [cursorX, cursorY, rotation, scale, isEnabled])
 
-  if (!isEnabled || isReducedMotion) return null
+  if (!isEnabled || isReducedMotion || !cursorHost) return null
+  const isInModal = cursorHost instanceof HTMLDialogElement
 
-  return (
+  return createPortal(
     <motion.div
-      data-cursor-mode={usesFooterBlend ? "footer-difference" : "solid"}
+      aria-hidden="true"
+      data-cursor-mode={isInModal ? "modal" : "solid"}
       style={{
         position: "fixed",
         left: cursorX,
@@ -284,8 +287,8 @@ export function SmoothCursor({
         zIndex: 100,
         pointerEvents: "none",
         willChange: "transform",
-        color: usesFooterBlend ? "#ffffff" : "var(--foreground)",
-        mixBlendMode: usesFooterBlend ? "difference" : "normal",
+        color: "var(--foreground)",
+        mixBlendMode: "normal",
         opacity: isVisible ? 1 : 0,
       }}
       initial={false}
@@ -293,6 +296,7 @@ export function SmoothCursor({
       transition={{ duration: isVisible ? 0.15 : 0.03 }}
     >
       {cursor}
-    </motion.div>
+    </motion.div>,
+    cursorHost,
   )
 }

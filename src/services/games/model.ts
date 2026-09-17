@@ -20,6 +20,7 @@ export interface GameResponse extends OrderedContent {
   coverMediaId: number
   rating: number
   playtimeHours: number
+  usesController: boolean
   manualPlaytimeHours: number
   steamAppId: number | null
   steam: SteamGame | null

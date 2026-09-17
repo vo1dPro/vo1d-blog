@@ -12,6 +12,8 @@ import {
   Volume2,
 } from 'lucide-react'
 import type { Game } from '@/types'
+import { useSteamPresence } from '@/hooks/useSteamPresence'
+import DynamicIsland from './DynamicIsland'
 import './index.css'
 
 const GlockModel = lazy(() => import('../GlockModel'))
@@ -132,11 +134,6 @@ function MagicIphoneFrame() {
         d={`M${SCREEN_X} 75C${SCREEN_X} 44.2101 46.2101 ${SCREEN_Y} 77 ${SCREEN_Y}H355C385.79 ${SCREEN_Y} 410.75 44.2101 410.75 75V807C410.75 837.79 385.79 862.75 355 862.75H77C46.2101 862.75 ${SCREEN_X} 837.79 ${SCREEN_X} 807V75Z`}
         className="magic-iphone-screen-rim"
         mask="url(#screenPunch)"
-      />
-
-      <path
-        d="M154 48.5C154 38.2827 162.283 30 172.5 30H259.5C269.717 30 278 38.2827 278 48.5C278 58.7173 269.717 67 259.5 67H172.5C162.283 67 154 58.7173 154 48.5Z"
-        className="magic-iphone-island"
       />
 
       <defs>
@@ -340,6 +337,8 @@ function CoverTile({ game, compact = false }: { game: Game; compact?: boolean })
 }
 
 export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerProps) {
+  const { presence, expired } = useSteamPresence()
+  const playingGame = !expired && presence?.state === 'playing' ? presence.game : null
   // The displayed list and transport buttons must use the same playtime order.
   const games = useMemo(() => [...sourceGames].sort((left, right) => {
     const hoursDiff = right.playtimeHours - left.playtimeHours
@@ -579,7 +578,13 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
             <div
               className={`game-player-shell game-player-${mode} ${screenAwake ? '' : 'is-screen-off'}`}
               style={paletteStyle}
+              inert={!screenAwake}
             >
+              <DynamicIsland
+                key={`${screenAwake ? 'on' : 'off'}-${playingGame?.id ?? 'idle'}`}
+                game={screenAwake ? playingGame : null}
+                totalGameHours={totalGameHours}
+              />
               <div className="game-bg-layer game-bg-layer-current" style={paletteStyle} aria-hidden="true" />
               {previousPaletteStyle && (
                 <div className="game-bg-layer game-bg-layer-previous" style={previousPaletteStyle} aria-hidden="true" />

@@ -339,11 +339,7 @@ function CoverTile({ game, compact = false }: { game: Game; compact?: boolean })
 
 export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerProps) {
   const { presence, expired } = useSteamPresence()
-  // TEMP: remove this preview state and button before committing.
-  const [previewIsland, setPreviewIsland] = useState(false)
-  const playingGame = import.meta.env.DEV && previewIsland
-    ? sourceGames[0] ?? null
-    : !expired && presence?.state === 'playing' ? presence.game : null
+  const playingGame = !expired && presence?.state === 'playing' ? presence.game : null
   // The displayed list and transport buttons must use the same playtime order.
   const games = useMemo(() => [...sourceGames].sort((left, right) => {
     const hoursDiff = right.playtimeHours - left.playtimeHours
@@ -565,12 +561,6 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
 
   return (
     <div ref={showcaseRef} className="game-showcase" aria-label="Game collection display">
-      {import.meta.env.DEV && (
-        <button type="button" className="island-preview-toggle" aria-pressed={previewIsland}
-          onClick={() => { setScreenAwake(true); setPreviewIsland(value => !value) }}>
-          {previewIsland ? '结束灵动岛检查' : '检查灵动岛（模拟游戏中）'}
-        </button>
-      )}
       <div className="game-phone-stage">
         {shouldRenderModels && modelsRequested && (
           <Suspense fallback={null}>

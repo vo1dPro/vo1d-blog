@@ -1053,22 +1053,6 @@
   opacity: 0;
   transform: translateX(-6px) scale(0.75);
 }
-/* TEMP: remove with the development preview button before committing. */
-.island-preview-toggle {
-  position: absolute;
-  top: -38px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 30;
-  padding: 6px 12px;
-  border: 1px solid currentColor;
-  border-radius: 14px;
-  background: var(--bg-primary, #222);
-  color: var(--text-primary, #fff);
-  white-space: nowrap;
-  font-size: 12px;
-  cursor: pointer;
-}
 @media (prefers-reduced-motion: reduce) {
   .game-status-icons .apple-icon-cellular { transition: none; }
 }

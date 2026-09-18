@@ -2,14 +2,11 @@ import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState }
 import type { CSSProperties, MouseEvent, PointerEvent } from 'react'
 import {
   Gamepad2,
-  Heart,
   Infinity as InfinityIcon,
   MoreHorizontal,
   Repeat2,
   Shuffle,
-  Star,
   Volume,
-  Volume2,
 } from 'lucide-react'
 import type { Game } from '@/types'
 import { useSteamPresence } from '@/hooks/useSteamPresence'
@@ -43,6 +40,10 @@ type AppleIconName =
   | 'cellular'
   | 'wifi'
   | 'row-lines'
+  | 'airplay'
+  | 'volume-high'
+  | 'star-outline'
+  | 'star-filled'
 
 const PHONE_WIDTH = 433
 const PHONE_HEIGHT = 882
@@ -338,7 +339,11 @@ function CoverTile({ game, compact = false }: { game: Game; compact?: boolean })
 
 export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerProps) {
   const { presence, expired } = useSteamPresence()
-  const playingGame = !expired && presence?.state === 'playing' ? presence.game : null
+  // TEMP: remove this preview state and button before committing.
+  const [previewIsland, setPreviewIsland] = useState(false)
+  const playingGame = import.meta.env.DEV && previewIsland
+    ? sourceGames[0] ?? null
+    : !expired && presence?.state === 'playing' ? presence.game : null
   // The displayed list and transport buttons must use the same playtime order.
   const games = useMemo(() => [...sourceGames].sort((left, right) => {
     const hoursDiff = right.playtimeHours - left.playtimeHours
@@ -560,6 +565,12 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
 
   return (
     <div ref={showcaseRef} className="game-showcase" aria-label="Game collection display">
+      {import.meta.env.DEV && (
+        <button type="button" className="island-preview-toggle" aria-pressed={previewIsland}
+          onClick={() => { setScreenAwake(true); setPreviewIsland(value => !value) }}>
+          {previewIsland ? '结束灵动岛检查' : '检查灵动岛（模拟游戏中）'}
+        </button>
+      )}
       <div className="game-phone-stage">
         {shouldRenderModels && modelsRequested && (
           <Suspense fallback={null}>
@@ -581,7 +592,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
               inert={!screenAwake}
             >
               <DynamicIsland
-                key={`${screenAwake ? 'on' : 'off'}-${playingGame?.id ?? 'idle'}`}
+                key={screenAwake ? 'on' : 'off'}
                 game={screenAwake ? playingGame : null}
                 totalGameHours={totalGameHours}
               />
@@ -593,7 +604,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
 
           <div className="game-status-bar">
             <span className="game-status-time">{statusTime}</span>
-            <span className="game-status-icons" aria-hidden="true">
+            <span className={`game-status-icons ${screenAwake && playingGame ? 'is-game-playing' : ''}`} aria-hidden="true">
               <AppleIcon name="cellular" className="apple-icon-cellular" />
               <AppleIcon name="wifi" className="apple-icon-wifi" />
               <img className="game-status-battery" src="/images/apple-icons/power-full.png" alt="" />
@@ -616,8 +627,9 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
                   className={`game-round-action ${isLiked ? 'is-liked' : ''}`}
                   onClick={toggleLike}
                   aria-label="Like game"
+                  aria-pressed={isLiked}
                 >
-                  <Star size={20} fill="currentColor" strokeWidth={0} />
+                  <AppleIcon name={isLiked ? 'star-filled' : 'star-outline'} />
                 </button>
                 <button className="game-round-action" aria-label="More game actions">
                   <MoreHorizontal size={20} strokeWidth={3} />
@@ -636,8 +648,9 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
                   className={`game-round-action ${isLiked ? 'is-liked' : ''}`}
                   onClick={toggleLike}
                   aria-label="Like game"
+                  aria-pressed={isLiked}
                 >
-                  <Star size={19} fill="currentColor" strokeWidth={0} />
+                  <AppleIcon name={isLiked ? 'star-filled' : 'star-outline'} />
                 </button>
                 <button className="game-round-action" aria-label="More game actions">
                   <MoreHorizontal size={19} strokeWidth={3} />
@@ -723,23 +736,25 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
             <div className="game-slider">
               <span style={{ width: `${game.likeLevel}%` }} />
             </div>
-            <Volume2 size={24} />
+            <AppleIcon name="volume-high" />
           </div>
 
           <div className="game-bottom-nav">
             <button
-              className={mode === 'review' ? 'active' : ''}
+              className={`game-lyrics-button${mode === 'review' ? ' active' : ''}`}
               onClick={() => toggleMode('review')}
               aria-label="Show my review"
+              aria-pressed={mode === 'review'}
             >
-              <AppleIcon name="review-outline" />
+              <span className="apple-icon game-lyrics-icon" aria-hidden="true" />
             </button>
             <button
-              className={isLiked ? 'active is-liked' : ''}
-              onClick={toggleLike}
-              aria-label="Like current game"
+              type="button"
+              aria-label="AirPlay"
+              aria-disabled="true"
+              title="AirPlay（暂未接入）"
             >
-              <Heart size={25} fill={isLiked ? 'currentColor' : 'none'} />
+              <AppleIcon name="airplay" />
             </button>
             <button
               className={mode === 'list' ? 'active' : ''}

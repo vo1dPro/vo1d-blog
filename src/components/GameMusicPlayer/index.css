@@ -565,7 +565,7 @@
   border: 0;
   border-radius: 999px;
   color: #fff;
-  background: rgba(255, 255, 255, 0.11);
+  background: transparent;
   cursor: pointer;
   transition:
     transform 180ms ease,
@@ -857,15 +857,15 @@
 }
 
 .apple-icon-review-outline {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   mask-image: url("/images/apple-icons/review-outline.png");
   -webkit-mask-image: url("/images/apple-icons/review-outline.png");
 }
 
 .apple-icon-list-lines {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   mask-image: url("/images/apple-icons/list-lines.png");
   -webkit-mask-image: url("/images/apple-icons/list-lines.png");
 }
@@ -880,23 +880,54 @@
 }
 
 .apple-icon-cellular {
-  width: 17px;
-  height: 14px;
+  width: 20px;
+  height: 20px;
   mask-image: url("/images/apple-icons/cellular.png");
   -webkit-mask-image: url("/images/apple-icons/cellular.png");
 }
 
 .apple-icon-wifi {
-  width: 14px;
-  height: 12px;
+  width: 18px;
+  height: 18px;
   mask-image: url("/images/apple-icons/wifi.png");
   -webkit-mask-image: url("/images/apple-icons/wifi.png");
 }
 
 .game-status-battery {
   display: block;
+  width: 24px;
+  height: 14px;
+  object-fit: contain;
+}
+
+.apple-icon-airplay {
   width: 22px;
   height: 22px;
+  mask-image: url("/images/apple-icons/airplay.png");
+  -webkit-mask-image: url("/images/apple-icons/airplay.png");
+}
+
+.apple-icon-volume-high {
+  width: 20px;
+  height: 20px;
+  mask-image: url("/images/apple-icons/volume-high.png");
+  -webkit-mask-image: url("/images/apple-icons/volume-high.png");
+}
+
+.apple-icon-star-outline,
+.apple-icon-star-filled {
+  width: 22px;
+  height: 22px;
+}
+
+.apple-icon-star-outline {
+  mask-image: url("/images/apple-icons/star-outline.png");
+  -webkit-mask-image: url("/images/apple-icons/star-outline.png");
+}
+
+.apple-icon-star-filled {
+  mask-image: url("/images/apple-icons/star-filled.png");
+  -webkit-mask-image: url("/images/apple-icons/star-filled.png");
 }
 
 .game-volume-area {
@@ -947,6 +978,37 @@
   color: #7f183f;
 }
 
+.game-bottom-nav .game-lyrics-button {
+  color: rgba(255, 226, 214, 0.65);
+}
+
+.game-bottom-nav .game-lyrics-button.active {
+  color: rgba(255, 226, 214, 0.65);
+  background: transparent;
+}
+
+.game-lyrics-icon {
+  width: 30px;
+  height: 30px;
+  mask-image: url("/images/apple-icons/lyrics-outline.svg");
+  -webkit-mask-image: url("/images/apple-icons/lyrics-outline.svg");
+}
+
+.game-lyrics-button.active .game-lyrics-icon {
+  mask-image: url("/images/apple-icons/lyrics-active.svg");
+  -webkit-mask-image: url("/images/apple-icons/lyrics-active.svg");
+}
+
+.game-lyrics-button:active {
+  transform: scale(0.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-bottom-nav .game-lyrics-button {
+    transition: none;
+  }
+}
+
 @media (max-width: 1000px) {
   .game-showcase {
     min-height: clamp(590px, 78vh, 740px);
@@ -980,4 +1042,33 @@
   .iphone-device-frame {
     width: min(100%, 338px);
   }
+}
+
+/* Keep Wi-Fi and battery anchored while cellular fades out for the island. */
+.game-status-icons .apple-icon-cellular {
+  transition: opacity 180ms ease, transform 280ms ease;
+  transform-origin: right center;
+}
+.game-status-icons.is-game-playing .apple-icon-cellular {
+  opacity: 0;
+  transform: translateX(-6px) scale(0.75);
+}
+/* TEMP: remove with the development preview button before committing. */
+.island-preview-toggle {
+  position: absolute;
+  top: -38px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  padding: 6px 12px;
+  border: 1px solid currentColor;
+  border-radius: 14px;
+  background: var(--bg-primary, #222);
+  color: var(--text-primary, #fff);
+  white-space: nowrap;
+  font-size: 12px;
+  cursor: pointer;
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-status-icons .apple-icon-cellular { transition: none; }
 }

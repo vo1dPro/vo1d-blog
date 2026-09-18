@@ -43,7 +43,8 @@ export default function DynamicIsland({
 }: DynamicIslandProps) {
   const reduceMotion = useReducedMotion();
   const controls = useAnimationControls();
-  const [expanded, setExpanded] = useState(false);
+  const [expandedGameId, setExpandedGameId] = useState<number | null>(null);
+  const expanded = game !== null && expandedGameId === game.id;
   const [liked, setLiked] = useState(false);
   const [coverFailed, setCoverFailed] = useState(false);
   const id = useId();
@@ -75,7 +76,7 @@ export default function DynamicIsland({
   function changeExpanded(value: boolean) {
     clearHold();
     expandedRef.current = value;
-    setExpanded(value);
+    setExpandedGameId(value && game ? game.id : null);
     if (!value) trigger.current?.focus();
   }
   function pulse() {
@@ -88,7 +89,7 @@ export default function DynamicIsland({
   }
   function beginHold() {
     clearHold();
-    if (!game || expandedRef.current) return;
+    if (!game || expanded) return;
     timer.current = window.setTimeout(() => {
       if (!gesture.current.active || gesture.current.canceled) return;
       gesture.current.held = true;
@@ -157,7 +158,7 @@ export default function DynamicIsland({
     function dismiss(event: globalThis.KeyboardEvent) {
       if (event.key !== "Escape") return;
       expandedRef.current = false;
-      setExpanded(false);
+      setExpandedGameId(null);
       trigger.current?.focus();
     }
     document.addEventListener("keydown", dismiss);
@@ -188,9 +189,9 @@ export default function DynamicIsland({
           data-phase={expanded ? "expanded" : game ? "playing" : "idle"}
           initial={false}
           animate={{
-            width: expanded ? 310 : game ? 142 : 100,
+            width: expanded ? 310 : game ? 154 : 100,
             height: expanded ? 166 : 30,
-            borderRadius: expanded ? 34 : 18,
+            borderRadius: expanded ? 44 : 18,
           }}
           transition={spring}
         >

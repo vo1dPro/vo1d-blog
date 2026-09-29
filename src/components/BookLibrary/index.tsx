@@ -160,7 +160,7 @@ export default function BookLibrary({ books }: BookLibraryProps) {
           <span>book</span>
         </div>
 
-        <ul className="book-library__sort-list" data-lenis-prevent>
+        <ul className="book-library__sort-list">
           {sortedBooks.map((book) => (
             <li className="book-library__sort-item" key={book.id}>
               <button
@@ -265,7 +265,7 @@ export default function BookLibrary({ books }: BookLibraryProps) {
           </div>
         </header>
 
-        <div className="book-library__content" data-lenis-prevent>
+        <div className="book-library__content">
           {visibleBooks.length > 0 ? (
             <div className="book-library__grid">
               {visibleBooks.map((book) => {

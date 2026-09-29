@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties, MouseEvent, PointerEvent } from 'react'
+import type { CSSProperties, MouseEvent } from 'react'
 import {
   Gamepad2,
   Infinity as InfinityIcon,
@@ -11,6 +11,7 @@ import {
 import type { Game } from '@/types'
 import { useSteamPresence } from '@/hooks/useSteamPresence'
 import DynamicIsland from './DynamicIsland'
+import { useLibraryDragScroll } from './useLibraryDragScroll'
 import './index.css'
 
 const GlockModel = lazy(() => import('../GlockModel'))
@@ -364,18 +365,11 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
   const [playerScale, setPlayerScale] = useState(1)
   const phoneFrameRef = useRef<HTMLDivElement | null>(null)
   const showcaseRef = useRef<HTMLDivElement | null>(null)
-  const libraryListRef = useRef<HTMLDivElement | null>(null)
   const activePaletteRef = useRef(DEFAULT_PALETTE)
   const paletteFadeTimerRef = useRef<number | null>(null)
-  const libraryDragRef = useRef({
-    active: false,
-    moved: false,
-    startY: 0,
-    scrollTop: 0,
-    suppressClick: false,
-  })
 
   const game = games[currentIndex]
+  const libraryDrag = useLibraryDragScroll(playerScale, screenAwake && mode === 'list', game.id)
   const isLiked = likedIds.has(game.id)
   const statusTime = formatStatusTime(statusDate)
   const libraryGames = useMemo(
@@ -489,50 +483,9 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
 
   function selectGame(index: number, event: MouseEvent<HTMLButtonElement>) {
     // Keyboard activation has no pointer gesture and must still work after a drag.
-    if (event.detail !== 0 && libraryDragRef.current.suppressClick) return
+    if (libraryDrag.shouldSuppressClick(event)) return
+    libraryDrag.stopMomentum()
     setCurrentIndex(index)
-  }
-
-  function handleLibraryPointerDown(event: PointerEvent<HTMLDivElement>) {
-    if (event.pointerType === 'mouse' && event.button !== 0) return
-
-    libraryDragRef.current = {
-      active: true,
-      moved: false,
-      startY: event.clientY,
-      scrollTop: event.currentTarget.scrollTop,
-      suppressClick: false,
-    }
-  }
-
-  function handleLibraryPointerMove(event: PointerEvent<HTMLDivElement>) {
-    const drag = libraryDragRef.current
-    if (!drag.active) return
-
-    const deltaY = event.clientY - drag.startY
-    if (Math.abs(deltaY) > 8) {
-      drag.moved = true
-      drag.suppressClick = true
-    }
-
-    // Touch uses native scrolling. Capture only an actual mouse drag so a tap's
-    // click keeps its original button target, without reordering on pointerup.
-    if (drag.moved && event.pointerType === 'mouse') {
-      event.currentTarget.setPointerCapture(event.pointerId)
-      event.preventDefault()
-      event.currentTarget.scrollTop = drag.scrollTop - deltaY / playerScale
-    }
-  }
-
-  function handleLibraryPointerEnd(event: PointerEvent<HTMLDivElement>) {
-    const drag = libraryDragRef.current
-    if (!drag.active) return
-
-    drag.active = false
-    if (event.type === 'pointercancel') drag.suppressClick = true
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    }
   }
 
   function nextGame() {
@@ -672,12 +625,8 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
               </div>
 
               <div
-                ref={libraryListRef}
                 className="game-library-list"
-                onPointerDown={handleLibraryPointerDown}
-                onPointerMove={handleLibraryPointerMove}
-                onPointerUp={handleLibraryPointerEnd}
-                onPointerCancel={handleLibraryPointerEnd}
+                {...libraryDrag.handlers}
                 onDragStart={(event) => event.preventDefault()}
               >
                 {libraryGames.map(({ item, index }) => (

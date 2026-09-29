@@ -29,6 +29,8 @@ export function SmoothScroll() {
         anchors: true,
         lerp: 0.075,
         smoothWheel: true,
+        // Let nested lists scroll locally, then hand scrolling back to the page at their edges.
+        allowNestedScroll: true,
         wheelMultiplier: 0.9,
       })
       lenis.on('scroll', ScrollTrigger.update)

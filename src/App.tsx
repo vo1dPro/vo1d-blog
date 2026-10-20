@@ -12,6 +12,7 @@ import { SmoothScroll } from './components/SmoothScroll'
 import { useSiteContent } from './hooks/site-content-context'
 import QueryContent from './components/QueryContent'
 import OpeningSequence from './components/OpeningSequence'
+import NotFoundPage from './components/NotFoundPage'
 
 const menuItems = [
   { label: 'Home', ariaLabel: 'Go to home page', link: '/#home' },
@@ -68,7 +69,7 @@ function App() {
             </div>
             <AppFooter />
           </>
-        ) : (
+        ) : pathname === '/' ? (
           <>
             <main className="page-shell">
               <HeroSection />
@@ -78,6 +79,8 @@ function App() {
             </main>
             <AppFooter />
           </>
+        ) : (
+          <NotFoundPage />
         )}
       </div>
     </OpeningSequence>

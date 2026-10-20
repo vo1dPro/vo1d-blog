@@ -17,6 +17,26 @@ const PROGRESS_STEPS = [
 
 // A critically damped spring settles each milestone within the short opening.
 const TICKER_SPRING = { damping: 40, stiffness: 400 }
+const OPENING_SEEN_KEY = 'vo1d-blog:opening-seen'
+let openingCompleted = false
+
+function hasSeenOpening() {
+  try {
+    return openingCompleted || window.sessionStorage.getItem(OPENING_SEEN_KEY) === '1'
+  } catch {
+    // Storage can be unavailable; still avoid replaying on component remounts.
+    return openingCompleted
+  }
+}
+
+function rememberOpening() {
+  openingCompleted = true
+  try {
+    window.sessionStorage.setItem(OPENING_SEEN_KEY, '1')
+  } catch {
+    // A blocked storage API must not prevent the page from becoming usable.
+  }
+}
 
 export default function OpeningSequence({ children }: { children: ReactNode }) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -27,7 +47,8 @@ export default function OpeningSequence({ children }: { children: ReactNode }) {
   const numberRef = useRef<HTMLDivElement>(null)
   const exitingRef = useRef(false)
   const [progress, setProgress] = useState(0)
-  const [complete, setComplete] = useState(false)
+  const [skipOpening] = useState(hasSeenOpening)
+  const [complete, setComplete] = useState(skipOpening)
   const [reducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
 
   const syncProgressBar = useCallback((value: number) => {
@@ -37,6 +58,8 @@ export default function OpeningSequence({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
+    if (skipOpening) return
+
     exitingRef.current = false
     const html = document.documentElement
     const previousOverflow = html.style.overflow
@@ -53,6 +76,7 @@ export default function OpeningSequence({ children }: { children: ReactNode }) {
       const timeline = gsap.timeline({
         defaults: { ease: 'power3.inOut' },
         onComplete: () => {
+          rememberOpening()
           restoreScrolling()
           setComplete(true)
           ScrollTrigger.refresh()
@@ -98,7 +122,7 @@ export default function OpeningSequence({ children }: { children: ReactNode }) {
       context.revert()
       restoreScrolling()
     }
-  }, [reducedMotion])
+  }, [reducedMotion, skipOpening])
 
   return (
     <div ref={rootRef} className="opening-sequence" data-complete={complete}>

@@ -105,6 +105,7 @@ export function SmoothCursor({
   const [isVisible, setIsVisible] = useState(false);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
   const [cursorHost, setCursorHost] = useState<HTMLElement | null>(null);
+  const [cursorColor, setCursorColor] = useState("var(--foreground)");
 
   useEffect(() => {
     // Native modal dialogs occupy the browser top layer, above every z-index.
@@ -168,9 +169,14 @@ export function SmoothCursor({
     const updatePointerVisibility = () => {
       if (lastUpdateTime.current > 0) {
         const topElement = document.elementFromPoint(
-          lastMousePos.current.x,
-          lastMousePos.current.y,
+          cursorX.get(),
+          cursorY.get(),
         );
+        const footer = topElement?.closest(".animated-footer");
+        const footerColor = footer
+          ? getComputedStyle(footer).getPropertyValue("--footer-fg").trim()
+          : "";
+        setCursorColor(footerColor || "var(--foreground)");
         const isOverInteractiveAscii =
           topElement !== null &&
           topElement.closest("[data-ascii-interactive]") !== null;
@@ -186,18 +192,26 @@ export function SmoothCursor({
       });
     };
 
-    const unsubscribeCursorY = cursorY.on("change", updatePointerVisibility);
+    const unsubscribeCursorX = cursorX.on("change", scheduleUpdate);
+    const unsubscribeCursorY = cursorY.on("change", scheduleUpdate);
+    const themeObserver = new MutationObserver(scheduleUpdate);
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
     window.addEventListener("resize", scheduleUpdate);
     updatePointerVisibility();
 
     return () => {
+      unsubscribeCursorX();
       unsubscribeCursorY();
+      themeObserver.disconnect();
       window.removeEventListener("scroll", scheduleUpdate);
       window.removeEventListener("resize", scheduleUpdate);
       if (frameId) cancelAnimationFrame(frameId);
     };
-  }, [cursorY]);
+  }, [cursorX, cursorY]);
 
   useEffect(() => {
     if (!isEnabled) return;
@@ -297,7 +311,7 @@ export function SmoothCursor({
         zIndex: 100,
         pointerEvents: "none",
         willChange: "transform",
-        color: "var(--foreground)",
+        color: cursorColor,
         mixBlendMode: "normal",
         opacity: isVisible ? 1 : 0,
       }}

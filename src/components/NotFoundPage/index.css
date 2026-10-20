@@ -1,0 +1,102 @@
+.not-found-page {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  overflow: hidden;
+  padding: 6rem 1.5rem;
+  box-sizing: border-box;
+  background: var(--background);
+  color: var(--foreground);
+  text-align: center;
+}
+
+.not-found-content {
+  width: 100%;
+  max-width: 64rem;
+  transform: translateY(-1.5rem);
+}
+
+.not-found-number {
+  position: relative;
+  width: max-content;
+  margin: 0 auto 0.75rem;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(8rem, 31vw, 22.5rem);
+  font-weight: 700;
+  line-height: 0.8;
+  letter-spacing: -0.015em;
+  padding-right: 0.015em;
+  user-select: none;
+  pointer-events: none;
+}
+
+.not-found-number span { display: block; }
+
+/* Complementary masks keep the baseline crisp and soften only the upper digits. */
+.not-found-number-sharp {
+  mask-image: linear-gradient(to bottom, transparent 20%, #000 78%);
+}
+
+.not-found-number-soft,
+.not-found-number-blur {
+  position: absolute;
+  inset: -40px;
+  padding: 40px;
+}
+
+.not-found-number-soft {
+  filter: blur(5px);
+  mask-image: linear-gradient(to bottom, transparent 15%, #000 42%, transparent 82%);
+}
+
+.not-found-number-blur {
+  filter: blur(clamp(8px, 1.6vw, 18px));
+  mask-image: linear-gradient(to bottom, #000 15%, #000 35%, transparent 80%);
+}
+
+.not-found-content h1 {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.75vw, 2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.not-found-description {
+  margin: 0.75rem 0 2rem;
+  color: var(--muted-foreground);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1rem, 1.75vw, 1.25rem);
+  line-height: 1.35;
+}
+
+.not-found-home {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0.75rem 1.75rem;
+  border-radius: 13px;
+  background: var(--foreground);
+  color: var(--background);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  text-decoration: none;
+  transition: opacity 180ms ease;
+}
+
+.not-found-home:hover { opacity: 0.8; }
+.not-found-home:focus-visible { outline: 2px solid var(--primary); outline-offset: 5px; }
+
+@media (max-height: 500px) and (min-width: 600px) {
+  .not-found-page { padding: 5rem 1.5rem 1.5rem; }
+  .not-found-content { transform: none; }
+  .not-found-number { font-size: 9rem; margin-bottom: 1rem; }
+  .not-found-description { margin-bottom: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .not-found-home { transition: none; }
+}

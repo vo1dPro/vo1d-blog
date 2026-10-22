@@ -35,6 +35,7 @@ export interface Creation {
 }
 
 export interface CreationFeed {
+  layout?: CreationLayout
   version: 1
   mode: 'preview' | 'live'
   updatedAt: string
@@ -45,4 +46,10 @@ export const creationPlatforms: Record<CreationPlatform, { label: string; hosts:
   x: { label: 'X', hosts: ['x.com', 'twitter.com'] },
   bilibili: { label: '哔哩哔哩', hosts: ['bilibili.com', 'b23.tv'] },
   douyin: { label: '抖音', hosts: ['douyin.com', 'iesdouyin.com'] },
+}
+
+export interface CreationLayout {
+ revision: number
+ categories: { id: string; name: string }[]
+ entries: { id: string; span: number; height: number | null; categoryIds: string[] }[]
 }

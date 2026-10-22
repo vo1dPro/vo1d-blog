@@ -94,3 +94,20 @@ export function parseCreationFeed(value: unknown): CreationFeed {
   if (new Set(items.map(item => `${item.platform}:${item.id}`)).size !== items.length) throw new Error('动态列表包含重复内容。')
   return { version: 1, mode: data.mode, updatedAt: text(data.updatedAt), items }
 }
+
+export function parseLayout(value: unknown): import('./model').CreationLayout {
+ const data = object(value)
+ const revision = data.revision
+ if (typeof revision !== 'number' || !Number.isInteger(revision) || revision < 0) throw new Error('布局版本无效')
+ const categories = array(data.categories).map(v => { const c = object(v); return { id:text(c.id), name:text(c.name) } })
+ const ids = new Set(categories.map(c => c.id))
+ const entries = array(data.entries).map(v => {
+  const e=object(v), span=e.span, height=e.height
+  if(typeof span !== 'number' || ![1,2,3].includes(span) || !(height===null || typeof height==='number' && Number.isInteger(height) && height>=180 && height<=1000)) throw new Error('布局尺寸无效')
+  const categoryIds=array(e.categoryIds).map(text)
+  if(categoryIds.some(id=>!ids.has(id))) throw new Error('分类关联无效')
+  return {id:text(e.id),span,height,categoryIds}
+ })
+ if(new Set(entries.map(e=>e.id)).size!==entries.length || ids.size!==categories.length) throw new Error('布局记录重复')
+ return {revision,categories,entries}
+}

@@ -1,4 +1,4 @@
-import { parseCreationFeed } from './parse'
+import { parseCreationFeed, parseLayout } from './parse'
 import { request } from '../client'
 
 // Optional explicit preview feed; failed live requests never
@@ -17,6 +17,7 @@ export async function getCreations(signal: AbortSignal) {
       feed.items.push(...parseCreationFeed(next).items)
     }
     if (feed.items.length !== first.total || new Set(feed.items.map(item => `${item.platform}:${item.id}`)).size !== feed.items.length) throw new Error('动态列表不完整，请重新加载。')
+    feed.layout = parseLayout(await request<unknown>('/creations/layout', signal))
     return feed
   }
   const response = await fetch(feedUrl, {

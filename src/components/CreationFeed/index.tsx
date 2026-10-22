@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { getCreations } from '@/services/creations'
 import type { Creation } from '@/services/creations/model'
 import { usePublicQuery } from '@/hooks/usePublicQuery'
@@ -90,24 +90,32 @@ function FeedWindow({ children }: { children: ReactNode }) {
 export default function CreationFeed() {
   const query = usePublicQuery(getCreations)
   const [opened, setOpened] = useState<{ post: Creation; trigger: HTMLButtonElement } | null>(null)
+  const [category, setCategory] = useState('all')
   const close = useCallback(() => setOpened(null), [])
   const items = query.status === 'success' ? query.data.items : []
   // Lead with the newest article, then retain chronological order for the other posts.
   const featured = items.find(post => post.article)
-  const arranged = featured ? [featured, ...items.filter(post => post !== featured)] : items
+  const layout = query.status === 'success' ? query.data.layout : undefined
+  const entries = new Map(layout?.entries.map(entry => [entry.id, entry]))
+  const key = (post: Creation) => `${post.platform}:${post.id}`
+  const ranks = new Map(layout?.entries.map((entry,index) => [entry.id,index]))
+  const ordered = layout && layout.entries.length > 0 ? [...items].sort((a,b)=>(ranks.get(key(a)) ?? -1)-(ranks.get(key(b)) ?? -1)) : featured ? [featured,...items.filter(post=>post!==featured)] : items
+  const activeCategory = layout?.categories.some(c=>c.id===category) ? category : 'all'
+  const arranged = ordered.filter(post=>activeCategory==='all' || entries.get(key(post))?.categoryIds.includes(activeCategory))
   return <section id="blog" className="creation-section" aria-labelledby="creation-heading">
     <div className="creation-section-heading">
       <h2 id="creation-heading">Blog</h2>
       {query.status === 'success' && query.data.mode === 'preview' && <p>公开推文预览 · 尚未连接个人创作账号</p>}
     </div>
-    {query.status === 'loading' && <div className="creation-grid" aria-busy="true" aria-label="正在加载动态">
+    {!!layout?.categories.length && <nav className="creation-categories" aria-label="动态分类">{[{id:'all',name:'全部'},...layout.categories].map(c=><button key={c.id} aria-pressed={activeCategory===c.id} onClick={()=>setCategory(c.id)}>{c.name}</button>)}</nav>}
+    {query.status === 'loading'  && <div className="creation-grid" aria-busy="true" aria-label="正在加载动态">
       {[0, 1, 2].map(key => <div key={key} className="creation-loading" />)}
     </div>}
     {query.status === 'error' && <div className="creation-state" role="alert"><p>暂时无法加载动态。</p><button onClick={query.retry}>重新加载</button></div>}
     {query.status === 'success' && (query.data.items.length === 0
       ? <p className="creation-state">还没有发布的动态。</p>
-      : <FeedWindow><Masonry>
-        {arranged.map(post => <article className={`creation-card creation-card-${cardSize(post)}`} key={`${post.platform}:${post.id}`}><div className="creation-card-content" onClick={event => {
+      : !arranged.length ? <p className="creation-state">此分类下还没有动态。</p> : <FeedWindow key={activeCategory}><Masonry>
+        {arranged.map(post => <article className={`creation-card creation-card-${cardSize(post)}`} key={`${post.platform}:${post.id}`} data-custom-layout={entries.has(key(post)) || undefined} data-layout-span={entries.get(key(post))?.span} style={{ '--creation-columns':(entries.get(key(post))?.span ?? 1)*4, '--creation-height': entries.get(key(post))?.height ? `${entries.get(key(post))!.height}px` : 'auto' } as CSSProperties}><div className="creation-card-content" onClick={event => {
           const trigger = event.currentTarget.querySelector<HTMLButtonElement>('.creation-card-open')
           if (trigger) setOpened({ post, trigger })
         }}><button type="button" className="creation-card-open"

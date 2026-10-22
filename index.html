@@ -2,6 +2,8 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
+    <!-- X video CDN rejects playback requests carrying a third-party Referer. -->
+    <meta name="referrer" content="no-referrer" />
     <script>
       try {
         const isLight = localStorage.getItem('theme') === 'light'

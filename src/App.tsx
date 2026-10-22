@@ -4,8 +4,7 @@ import { AnimatedThemeToggler } from './components/AnimatedThemeToggler'
 import AppFooter from './components/AppFooter'
 import HeroSection from './components/HeroSection'
 import SkillsSection from './components/SkillsSection'
-import BlogSection from './components/BlogSection'
-import ArticleRoute from './components/ArticleRoute'
+import CreationFeed from './components/CreationFeed'
 import HobbiesSection from './components/HobbiesSection'
 import StaggeredMenu from './components/StaggeredMenu'
 import { SmoothScroll } from './components/SmoothScroll'
@@ -28,7 +27,6 @@ function App() {
     label: social.name, link: social.url, icon: social.icon?.url ?? null, darkIcon: social.darkIcon?.url ?? null,
   })) : []
   const [pathname, setPathname] = useState(() => window.location.pathname)
-  const isBlogPath = pathname.startsWith('/blog/')
 
   useEffect(() => {
     const handlePopState = () => setPathname(window.location.pathname)
@@ -62,19 +60,12 @@ function App() {
           changeMenuColorOnOpen
         />
 
-        {isBlogPath ? (
-          <>
-            <div className="page-shell">
-              <ArticleRoute pathname={pathname} />
-            </div>
-            <AppFooter />
-          </>
-        ) : pathname === '/' ? (
+        {pathname === '/' ? (
           <>
             <main className="page-shell">
               <HeroSection />
               <SkillsSection />
-              <BlogSection />
+              <CreationFeed />
               <HobbiesSection />
             </main>
             <AppFooter />

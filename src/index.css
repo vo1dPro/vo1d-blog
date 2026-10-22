@@ -57,10 +57,10 @@ html {
   letter-spacing: var(--letter-spacing);
 }
 
-html,
-html *,
-html *::before,
-html *::after {
+html:has([data-cursor-mode]),
+html:has([data-cursor-mode]) *,
+html:has([data-cursor-mode]) *::before,
+html:has([data-cursor-mode]) *::after {
   cursor: none !important;
 }
 

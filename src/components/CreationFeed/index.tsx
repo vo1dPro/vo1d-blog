@@ -12,15 +12,19 @@ function Masonry({ children }: { children: ReactNode }) {
   useLayoutEffect(() => {
     const grid = ref.current
     if (!grid) return
-    const observer = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        const card = entry.target as HTMLElement
-        const height = entry.borderBoxSize[0]?.blockSize ?? card.getBoundingClientRect().height
-        card.style.gridRowEnd = `span ${Math.ceil(height + 16)}`
-      }
+    let frame = 0
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        for (const child of grid.children) {
+          const card = child as HTMLElement
+          const span = `span ${Math.ceil(card.getBoundingClientRect().height + 16)}`
+          if (card.style.gridRowEnd !== span) card.style.gridRowEnd = span
+        }
+      })
     })
     for (const child of grid.children) observer.observe(child)
-    return () => observer.disconnect()
+    return () => { observer.disconnect(); cancelAnimationFrame(frame) }
   }, [children])
   return <div ref={ref} className="creation-grid creation-masonry">{children}</div>
 }
@@ -93,13 +97,10 @@ export default function CreationFeed() {
   const [category, setCategory] = useState('all')
   const close = useCallback(() => setOpened(null), [])
   const items = query.status === 'success' ? query.data.items : []
-  // Lead with the newest article, then retain chronological order for the other posts.
-  const featured = items.find(post => post.article)
   const layout = query.status === 'success' ? query.data.layout : undefined
   const entries = new Map(layout?.entries.map(entry => [entry.id, entry]))
   const key = (post: Creation) => `${post.platform}:${post.id}`
-  const ranks = new Map(layout?.entries.map((entry,index) => [entry.id,index]))
-  const ordered = layout && layout.entries.length > 0 ? [...items].sort((a,b)=>(ranks.get(key(a)) ?? -1)-(ranks.get(key(b)) ?? -1)) : featured ? [featured,...items.filter(post=>post!==featured)] : items
+  const ordered = [...items].sort((a,b) => Date.parse(b.publishedAt)-Date.parse(a.publishedAt) || `${b.platform}:${b.id}`.localeCompare(`${a.platform}:${a.id}`, 'en', { numeric: true }))
   const activeCategory = layout?.categories.some(c=>c.id===category) ? category : 'all'
   const arranged = ordered.filter(post=>activeCategory==='all' || entries.get(key(post))?.categoryIds.includes(activeCategory))
   return <section id="blog" className="creation-section" aria-labelledby="creation-heading">
@@ -115,7 +116,7 @@ export default function CreationFeed() {
     {query.status === 'success' && (query.data.items.length === 0
       ? <p className="creation-state">还没有发布的动态。</p>
       : !arranged.length ? <p className="creation-state">此分类下还没有动态。</p> : <FeedWindow key={activeCategory}><Masonry>
-        {arranged.map(post => <article className={`creation-card creation-card-${cardSize(post)}`} key={`${post.platform}:${post.id}`} data-custom-layout={entries.has(key(post)) || undefined} data-layout-span={entries.get(key(post))?.span} style={{ '--creation-columns':(entries.get(key(post))?.span ?? 1)*4, '--creation-height': entries.get(key(post))?.height ? `${entries.get(key(post))!.height}px` : 'auto' } as CSSProperties}><div className="creation-card-content" onClick={event => {
+        {arranged.map(post => <article className={`creation-card creation-card-${cardSize(post)}`} key={`${post.platform}:${post.id}`} data-postid={key(post)} data-custom-layout={entries.has(key(post)) || undefined} data-layout-span={entries.get(key(post))?.span} style={{ '--creation-columns':(entries.get(key(post))?.span ?? 1)*4, '--creation-height': entries.get(key(post))?.height ? `${entries.get(key(post))!.height}px` : 'auto' } as CSSProperties}><div className="creation-card-content" onClick={event => {
           const trigger = event.currentTarget.querySelector<HTMLButtonElement>('.creation-card-open')
           if (trigger) setOpened({ post, trigger })
         }}><button type="button" className="creation-card-open"

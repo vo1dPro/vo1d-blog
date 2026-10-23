@@ -11,6 +11,11 @@ export function SmoothScroll() {
     let lenis: Lenis | null = null
     let ticker: ((time: number) => void) | null = null
 
+    const syncScrollLock = () => {
+      if (document.documentElement.hasAttribute('data-page-scroll-locked')) lenis?.stop()
+      else lenis?.start()
+    }
+
     const destroyLenis = () => {
       if (ticker) {
         gsap.ticker.remove(ticker)
@@ -34,6 +39,7 @@ export function SmoothScroll() {
         wheelMultiplier: 0.9,
       })
       lenis.on('scroll', ScrollTrigger.update)
+      syncScrollLock()
 
       ticker = (time: number) => {
         lenis?.raf(time * 1000)
@@ -45,10 +51,12 @@ export function SmoothScroll() {
     const refreshScrollTriggers = () => ScrollTrigger.refresh()
 
     setupLenis()
+    window.addEventListener('page-scroll-lock-change', syncScrollLock)
     reduceMotionQuery.addEventListener('change', setupLenis)
     window.addEventListener('load', refreshScrollTriggers, { once: true })
 
     return () => {
+      window.removeEventListener('page-scroll-lock-change', syncScrollLock)
       reduceMotionQuery.removeEventListener('change', setupLenis)
       window.removeEventListener('load', refreshScrollTriggers)
       destroyLenis()

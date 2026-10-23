@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
+import { LayoutGroup, motion, useReducedMotion } from 'motion/react'
 import { getCreations } from '@/services/creations'
 import type { Creation } from '@/services/creations/model'
 import { usePublicQuery } from '@/hooks/usePublicQuery'
@@ -18,7 +19,8 @@ function Masonry({ children }: { children: ReactNode }) {
       frame = requestAnimationFrame(() => {
         for (const child of grid.children) {
           const card = child as HTMLElement
-          const span = `span ${Math.ceil(card.getBoundingClientRect().height + 16)}`
+          // Shared-layout transforms must not change the masonry's row spans.
+          const span = `span ${card.offsetHeight + 16}`
           if (card.style.gridRowEnd !== span) card.style.gridRowEnd = span
         }
       })
@@ -92,6 +94,7 @@ function FeedWindow({ children }: { children: ReactNode }) {
 }
 
 export default function CreationFeed() {
+  const reducedMotion = useReducedMotion()
   const query = usePublicQuery(getCreations)
   const [opened, setOpened] = useState<{ post: Creation; trigger: HTMLButtonElement } | null>(null)
   const [category, setCategory] = useState('all')
@@ -103,7 +106,7 @@ export default function CreationFeed() {
   const ordered = [...items].sort((a,b) => Date.parse(b.publishedAt)-Date.parse(a.publishedAt) || `${b.platform}:${b.id}`.localeCompare(`${a.platform}:${a.id}`, 'en', { numeric: true }))
   const activeCategory = layout?.categories.some(c=>c.id===category) ? category : 'all'
   const arranged = ordered.filter(post=>activeCategory==='all' || entries.get(key(post))?.categoryIds.includes(activeCategory))
-  return <section id="blog" className="creation-section" aria-labelledby="creation-heading">
+  return <LayoutGroup id="creation-feed"><section id="blog" className="creation-section" aria-labelledby="creation-heading">
     <div className="creation-section-heading">
       <h2 id="creation-heading">Blog</h2>
       {query.status === 'success' && query.data.mode === 'preview' && <p>公开推文预览 · 尚未连接个人创作账号</p>}
@@ -116,15 +119,15 @@ export default function CreationFeed() {
     {query.status === 'success' && (query.data.items.length === 0
       ? <p className="creation-state">还没有发布的动态。</p>
       : !arranged.length ? <p className="creation-state">此分类下还没有动态。</p> : <FeedWindow key={activeCategory}><Masonry>
-        {arranged.map(post => <article className={`creation-card creation-card-${cardSize(post)}`} key={`${post.platform}:${post.id}`} data-postid={key(post)} data-custom-layout={entries.has(key(post)) || undefined} data-layout-span={entries.get(key(post))?.span} style={{ '--creation-columns':(entries.get(key(post))?.span ?? 1)*4, '--creation-height': entries.get(key(post))?.height ? `${entries.get(key(post))!.height}px` : 'auto' } as CSSProperties}><div className="creation-card-content" onClick={event => {
+        {arranged.map(post => <motion.article layoutId={reducedMotion ? undefined : `creation-${key(post)}`} transition={{ type: 'spring', stiffness: 320, damping: 34 }} className={`creation-card creation-card-${cardSize(post)}`} key={`${post.platform}:${post.id}`} data-postid={key(post)} data-custom-layout={entries.has(key(post)) || undefined} data-layout-span={entries.get(key(post))?.span} style={{ borderRadius: 12, '--creation-columns':(entries.get(key(post))?.span ?? 1)*4, '--creation-height': entries.get(key(post))?.height ? `${entries.get(key(post))!.height}px` : 'auto' } as CSSProperties}><motion.div layout="position" className="creation-card-content" onClick={event => {
           const trigger = event.currentTarget.querySelector<HTMLButtonElement>('.creation-card-open')
           if (trigger) setOpened({ post, trigger })
         }}><button type="button" className="creation-card-open"
           aria-label={`查看 ${post.author.name} 的动态${post.title ? `：${post.title}` : ''}`}
-          aria-haspopup="dialog" />
+          aria-haspopup="dialog" aria-expanded={opened?.post.id === post.id && opened.post.platform === post.platform} />
           <CreationContent post={post} />
-        </div><CreationActions post={post} /></article>)}
+        </motion.div><CreationActions post={post} /></motion.article>)}
       </Masonry></FeedWindow>)}
     {opened && <CreationDialog post={opened.post} trigger={opened.trigger} onClosed={close} />}
-  </section>
+  </section></LayoutGroup>
 }

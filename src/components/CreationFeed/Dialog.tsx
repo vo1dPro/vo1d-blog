@@ -1,95 +1,70 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { gsap } from 'gsap'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import type { Creation } from '@/services/creations/model'
 import { CreationContent, CreationActions } from './Card'
 
+// Shared layout follows Motion Primitives' Morphing Dialog pattern.
+// Keep the native modal for top-layer rendering, inert background and Escape.
 export default function CreationDialog({ post, trigger, onClosed }: {
   post: Creation
   trigger: HTMLButtonElement
   onClosed: () => void
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const panelRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  const requestClose = useRef<() => void>(() => {})
+  const [isOpen, setIsOpen] = useState(true)
+  const reducedMotion = useReducedMotion()
+  const transition = reducedMotion
+    ? { duration: 0 }
+    : { type: 'spring' as const, stiffness: 320, damping: 34 }
+
+  function close() {
+    dialogRef.current?.querySelectorAll('video').forEach(video => video.pause())
+    setIsOpen(false)
+  }
 
   useLayoutEffect(() => {
     const dialog = dialogRef.current
-    const panel = panelRef.current
-    if (!dialog || !panel) return
+    if (!dialog) return
     const body = document.body
-    const scrollY = window.scrollY
-    const old = { position: body.style.position, top: body.style.top, width: body.style.width, overflow: body.style.overflow, paddingRight: body.style.paddingRight }
+    const root = document.documentElement
+    const old = { overflow: body.style.overflow, paddingRight: body.style.paddingRight }
+    const oldRootOverflow = root.style.overflow
+    const oldLock = root.getAttribute('data-page-scroll-locked')
     const gap = window.innerWidth - document.documentElement.clientWidth
     const padding = parseFloat(getComputedStyle(body).paddingRight) || 0
-    const origin = trigger.getBoundingClientRect()
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)')
-    let closing = false
-    let disposed = false
-    dialog.showModal()
-    body.style.position = 'fixed'
-    body.style.top = `-${scrollY}px`
-    body.style.width = '100%'
+    // Keep the document in normal flow: fixing body resets scrollY and invalidates
+    // both Motion's shared-layout measurements and the smooth-scroll position.
+    root.setAttribute('data-page-scroll-locked', '')
+    window.dispatchEvent(new Event('page-scroll-lock-change'))
+    root.style.overflow = 'hidden'
     body.style.overflow = 'hidden'
     if (gap > 0) body.style.paddingRight = `${padding + gap}px`
+    // `open` makes the first layout measurement available before promotion.
+    dialog.removeAttribute('open')
+    dialog.showModal()
     contentRef.current?.focus({ preventScroll: true })
-    const destination = panel.getBoundingClientRect()
-    const start = {
-      x: origin.left + origin.width / 2 - destination.left - destination.width / 2,
-      y: origin.top + origin.height / 2 - destination.top - destination.height / 2,
-      scaleX: origin.width / destination.width,
-      scaleY: Math.min(1, origin.height / destination.height),
-    }
-    const context = gsap.context(() => {
-      gsap.fromTo(panel, { ...start, opacity: 0 }, {
-        x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1,
-        duration: reduced.matches ? 0 : 0.46, ease: 'power3.out',
-        onComplete: () => { dialog.dataset.state = 'open' },
-      })
-      gsap.fromTo('.creation-scrim', { opacity: 0 }, { opacity: 1, duration: reduced.matches ? 0 : 0.25 })
-    }, dialog)
-    dialog.dataset.state = reduced.matches ? 'open' : 'opening'
-    const finish = () => { if (!disposed) onClosed() }
-    context.add('close', () => {
-      if (closing) return
-      closing = true
-      dialog.dataset.state = 'closing'
-      panel.querySelectorAll('video').forEach(video => video.pause())
-      gsap.killTweensOf(panel)
-      const target = trigger.getBoundingClientRect()
-      gsap.to(panel, {
-        x: target.left + target.width / 2 - destination.left - destination.width / 2,
-        y: target.top + target.height / 2 - destination.top - destination.height / 2,
-        scaleX: target.width / destination.width, scaleY: Math.min(1, target.height / destination.height),
-        opacity: 0, duration: reduced.matches ? 0 : 0.26, ease: 'power2.in', onComplete: finish,
-      })
-      gsap.to('.creation-scrim', { opacity: 0, duration: reduced.matches ? 0 : 0.22 })
-    })
-    requestClose.current = () => { context.close() }
-    const motionChanged = () => {
-      if (!reduced.matches) return
-      gsap.killTweensOf(panel)
-      if (closing) finish()
-      else {
-        gsap.set(panel, { x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1 })
-        dialog.dataset.state = 'open'
-      }
-    }
-    reduced.addEventListener('change', motionChanged)
     return () => {
-      disposed = true
-      requestClose.current = () => {}
-      context.revert()
-      reduced.removeEventListener('change', motionChanged)
       dialog.close()
       Object.assign(body.style, old)
-      window.scrollTo({ top: scrollY, behavior: 'instant' })
-      if (trigger.isConnected) trigger.focus({ preventScroll: true })
+      root.style.overflow = oldRootOverflow
+      if (oldLock === null) root.removeAttribute('data-page-scroll-locked')
+      else root.setAttribute('data-page-scroll-locked', oldLock)
+      window.dispatchEvent(new Event('page-scroll-lock-change'))
+      // Let the feed remeasure its clipped/inert cards after the modal exits.
+      requestAnimationFrame(() => {
+        if (dialog.isConnected || !trigger.isConnected) return
+        const target = trigger.closest('[inert]')
+          ? trigger.closest('.creation-feed-window')?.querySelector<HTMLButtonElement>('.creation-feed-more')
+          : trigger
+        target?.focus({ preventScroll: true })
+      })
     }
-  }, [post.id, trigger, onClosed])
+  }, [trigger])
 
-  return createPortal(<dialog ref={dialogRef} className="creation-dialog" aria-label={`${post.author.name} 的动态`} data-lenis-prevent
+  return createPortal(<motion.dialog open layoutRoot ref={dialogRef} className="creation-dialog" aria-label={`${post.author.name} 的动态`} data-lenis-prevent
+    data-state={isOpen ? 'open' : 'closing'}
     onKeyDown={event => {
       if (event.key !== 'Tab') return
       const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(
@@ -105,13 +80,25 @@ export default function CreationDialog({ post, trigger, onClosed }: {
         first?.focus()
       }
     }}
-    onCancel={event => { event.preventDefault(); requestClose.current() }}>
-    <div className="creation-scrim" aria-hidden="true" onClick={() => requestClose.current()} />
-    <div className="creation-window" ref={panelRef}>
-      <div ref={contentRef} className="creation-window-scroll" data-lenis-prevent tabIndex={0} role="region" aria-label="动态内容">
-        <CreationContent post={post} expanded />
-        <CreationActions post={post} />
-      </div>
-    </div>
-  </dialog>, document.body)
+    onCancel={event => { event.preventDefault(); close() }}>
+    <AnimatePresence onExitComplete={onClosed}>
+      {isOpen && <motion.div key="scrim" className="creation-scrim" aria-hidden="true" onClick={close}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        transition={{ duration: reducedMotion ? 0 : 0.22 }} />}
+      {isOpen && <motion.div key="panel" className="creation-window"
+        layoutId={reducedMotion ? undefined : `creation-${post.platform}:${post.id}`}
+        style={{ borderRadius: 18 }} transition={transition}>
+        <motion.div layout="position" layoutScroll ref={contentRef} className="creation-window-scroll" data-lenis-prevent tabIndex={0} role="region" aria-label="动态内容">
+          <motion.div layout="position" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: reducedMotion ? 0 : 0.18, delay: reducedMotion ? 0 : 0.06 }}>
+            <CreationContent post={post} expanded />
+          </motion.div>
+          <motion.div layout="position" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: reducedMotion ? 0 : 0.16 }}>
+            <CreationActions post={post} />
+          </motion.div>
+        </motion.div>
+      </motion.div>}
+    </AnimatePresence>
+  </motion.dialog>, document.body)
 }

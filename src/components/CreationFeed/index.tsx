@@ -7,6 +7,7 @@ import type { Creation } from '@/services/creations/model'
 import { usePublicQuery } from '@/hooks/usePublicQuery'
 import { CreationContent, CreationActions } from './Card'
 import CreationDialog from './Dialog'
+import CategoryScroller from './CategoryScroller'
 import './index.css'
 
 function Masonry({ children }: { children: ReactNode }) {
@@ -123,7 +124,7 @@ export default function CreationFeed() {
     // Browser snapshots preserve each card's old/new geometry even though the
     // filtered masonry remounts. Only cards participate, not the page or wheel.
     document.documentElement.classList.add('creation-filter-transition')
-    const categoryNav = element?.querySelector<HTMLElement>('.creation-categories')
+    const categoryNav = element?.querySelector<HTMLElement>('.creation-category-scroller')
     const keepCategoryFocus = categoryNav?.contains(document.activeElement)
     const transition = document.startViewTransition(() => {
       if (revision === filterRevision.current) flushSync(() => setCategory(id))
@@ -157,7 +158,7 @@ export default function CreationFeed() {
       {query.status === 'success' && query.data.mode === 'preview' && <p>公开推文预览 · 尚未连接个人创作账号</p>}
     </div>
     <div ref={feedLayout} className={`creation-feed-layout${layout?.categories.length ? ' has-categories' : ''}`}>
-    {!!layout?.categories.length && <nav className="creation-categories" aria-label="动态分类">{[{id:'all',name:'全部'},...layout.categories].map(c=><button key={c.id} aria-pressed={activeCategory===c.id} onClick={()=>changeCategory(c.id)}>{c.name}</button>)}</nav>}
+    {!!layout?.categories.length && <CategoryScroller categories={layout.categories} value={activeCategory} onChange={changeCategory} />}
     <div id="creation-feed-results" className="creation-feed-results" data-category={activeCategory}>
     {query.status === 'loading'  && <div className="creation-grid" aria-busy="true" aria-label="正在加载动态">
       {[0, 1, 2].map(key => <div key={key} className="creation-loading" />)}

@@ -1,4 +1,5 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import type { CSSProperties, ReactNode } from 'react'
 import { LayoutGroup, motion, useReducedMotion } from 'motion/react'
 import { getCreations } from '@/services/creations'
@@ -98,6 +99,50 @@ export default function CreationFeed() {
   const query = usePublicQuery(getCreations)
   const [opened, setOpened] = useState<{ post: Creation; trigger: HTMLButtonElement } | null>(null)
   const [category, setCategory] = useState('all')
+  const feedLayout = useRef<HTMLDivElement>(null)
+  const filterTransition = useRef<ViewTransition | null>(null)
+  const filterRevision = useRef(0)
+  useEffect(() => () => {
+    filterRevision.current += 1
+    filterTransition.current?.skipTransition()
+    document.documentElement.classList.remove('creation-filter-transition')
+  }, [])
+  const changeCategory = (id: string) => {
+    if (id === category && !filterTransition.current) return
+    const element = feedLayout.current
+    // Keep the sticky boundary and downstream scroll anchors stable when a
+    // long/expanded feed is replaced by a short or empty category.
+    if (element) element.style.minHeight = `${element.getBoundingClientRect().height}px`
+    const revision = ++filterRevision.current
+    filterTransition.current?.skipTransition()
+    if (reducedMotion || !document.startViewTransition) {
+      document.documentElement.classList.remove('creation-filter-transition')
+      setCategory(id)
+      return
+    }
+    // Browser snapshots preserve each card's old/new geometry even though the
+    // filtered masonry remounts. Only cards participate, not the page or wheel.
+    document.documentElement.classList.add('creation-filter-transition')
+    const categoryNav = element?.querySelector<HTMLElement>('.creation-categories')
+    const keepCategoryFocus = categoryNav?.contains(document.activeElement)
+    const transition = document.startViewTransition(() => {
+      if (revision === filterRevision.current) flushSync(() => setCategory(id))
+      // Rendering is paused during capture: don't await animation frames here.
+      // Resolve row spans synchronously so the new snapshot has final geometry.
+      for (const card of element?.querySelectorAll<HTMLElement>('.creation-masonry > .creation-card') ?? []) {
+        card.style.gridRowEnd = `span ${card.offsetHeight + 16}`
+      }
+    })
+    filterTransition.current = transition
+    void transition.finished.catch(() => {}).finally(() => {
+      if (revision !== filterRevision.current) return
+      filterTransition.current = null
+      document.documentElement.classList.remove('creation-filter-transition')
+      if (keepCategoryFocus && (document.activeElement === document.body || categoryNav?.contains(document.activeElement))) {
+        categoryNav?.querySelector<HTMLButtonElement>('[aria-pressed="true"]')?.focus({ preventScroll: true })
+      }
+    })
+  }
   const close = useCallback(() => setOpened(null), [])
   const items = query.status === 'success' ? query.data.items : []
   const layout = query.status === 'success' ? query.data.layout : undefined
@@ -111,15 +156,17 @@ export default function CreationFeed() {
       <h2 id="creation-heading">Blog</h2>
       {query.status === 'success' && query.data.mode === 'preview' && <p>公开推文预览 · 尚未连接个人创作账号</p>}
     </div>
-    {!!layout?.categories.length && <nav className="creation-categories" aria-label="动态分类">{[{id:'all',name:'全部'},...layout.categories].map(c=><button key={c.id} aria-pressed={activeCategory===c.id} onClick={()=>setCategory(c.id)}>{c.name}</button>)}</nav>}
+    <div ref={feedLayout} className={`creation-feed-layout${layout?.categories.length ? ' has-categories' : ''}`}>
+    {!!layout?.categories.length && <nav className="creation-categories" aria-label="动态分类">{[{id:'all',name:'全部'},...layout.categories].map(c=><button key={c.id} aria-pressed={activeCategory===c.id} onClick={()=>changeCategory(c.id)}>{c.name}</button>)}</nav>}
+    <div id="creation-feed-results" className="creation-feed-results" data-category={activeCategory}>
     {query.status === 'loading'  && <div className="creation-grid" aria-busy="true" aria-label="正在加载动态">
       {[0, 1, 2].map(key => <div key={key} className="creation-loading" />)}
     </div>}
     {query.status === 'error' && <div className="creation-state" role="alert"><p>暂时无法加载动态。</p><button onClick={query.retry}>重新加载</button></div>}
     {query.status === 'success' && (query.data.items.length === 0
-      ? <p className="creation-state">还没有发布的动态。</p>
-      : !arranged.length ? <p className="creation-state">此分类下还没有动态。</p> : <FeedWindow key={activeCategory}><Masonry>
-        {arranged.map(post => <motion.article layoutId={reducedMotion ? undefined : `creation-${key(post)}`} transition={{ type: 'spring', stiffness: 320, damping: 34 }} className={`creation-card creation-card-${cardSize(post)}`} key={`${post.platform}:${post.id}`} data-postid={key(post)} data-custom-layout={entries.has(key(post)) || undefined} data-layout-span={entries.get(key(post))?.span} style={{ borderRadius: 12, '--creation-columns':(entries.get(key(post))?.span ?? 1)*4, '--creation-height': entries.get(key(post))?.height ? `${entries.get(key(post))!.height}px` : 'auto' } as CSSProperties}><motion.div layout="position" className="creation-card-content" onClick={event => {
+      ? <p className="creation-state">还没有发布的动态</p>
+      : !arranged.length ? <p className="creation-state">此分类下还没有动态</p> : <FeedWindow key={activeCategory}><Masonry>
+        {arranged.map(post => <motion.article layoutId={reducedMotion ? undefined : `creation-${key(post)}`} transition={{ type: 'spring', stiffness: 320, damping: 34 }} className={`creation-card creation-card-${cardSize(post)}`} key={`${post.platform}:${post.id}`} data-postid={key(post)} data-custom-layout={entries.has(key(post)) || undefined} data-layout-span={entries.get(key(post))?.span} style={{ '--creation-phase': `creation-phase-${arranged.indexOf(post) % 3}`, '--creation-transition-name': `creation-tile-${ordered.indexOf(post)}`, borderRadius: 12, '--creation-columns':(entries.get(key(post))?.span ?? 1)*4, '--creation-height': entries.get(key(post))?.height ? `${entries.get(key(post))!.height}px` : 'auto' } as CSSProperties}><motion.div layout="position" className="creation-card-content" onClick={event => {
           const trigger = event.currentTarget.querySelector<HTMLButtonElement>('.creation-card-open')
           if (trigger) setOpened({ post, trigger })
         }}><button type="button" className="creation-card-open"
@@ -128,6 +175,8 @@ export default function CreationFeed() {
           <CreationContent post={post} />
         </motion.div><CreationActions post={post} /></motion.article>)}
       </Masonry></FeedWindow>)}
+    </div>
+    </div>
     {opened && <CreationDialog post={opened.post} trigger={opened.trigger} onClosed={close} />}
   </section></LayoutGroup>
 }

@@ -122,3 +122,39 @@
 @media(min-width:701px){.creation-card[data-custom-layout]{grid-column:span var(--creation-columns);height:var(--creation-height);display:flex;flex-direction:column}.creation-card[data-custom-layout] .creation-card-content{overflow:auto;min-height:0;flex:1}.creation-card[data-custom-layout]>.creation-actions-wrap{flex-shrink:0}}
 
 @media(min-width:701px) and (max-width:1100px){.creation-card[data-custom-layout]{grid-column:span 1}.creation-card[data-layout-span="2"],.creation-card[data-layout-span="3"]{grid-column:span 2}}
+
+.creation-feed-layout { position:relative; overflow-anchor:none; }
+.creation-feed-results { min-width:0; }
+
+/* Bento-style category changes: retained tiles move; entering/leaving tiles
+   slide through their own clipped snapshot, without animating the page. */
+html.creation-filter-transition { view-transition-name:none; }
+.creation-filter-transition .creation-card {
+  view-transition-name:var(--creation-transition-name);
+  view-transition-class:creation-tile var(--creation-phase);
+}
+.creation-filter-transition::view-transition { pointer-events:none; }
+::view-transition-group(.creation-tile) {
+  animation-duration:480ms;
+  animation-timing-function:cubic-bezier(.22,1,.36,1);
+}
+::view-transition-image-pair(.creation-tile) { overflow:clip; border-radius:12px; }
+::view-transition-old(.creation-tile),::view-transition-new(.creation-tile) {
+  height:100%; object-fit:cover; object-position:top left;
+  animation-duration:300ms;
+  animation-timing-function:cubic-bezier(.22,1,.36,1);
+}
+::view-transition-old(.creation-tile):only-child { animation-name:creation-tile-out; }
+::view-transition-new(.creation-tile):only-child { animation-name:creation-tile-in; animation-duration:440ms; }
+::view-transition-new(.creation-phase-1):only-child { animation-delay:35ms; animation-fill-mode:both; }
+::view-transition-new(.creation-phase-2):only-child { animation-delay:70ms; animation-fill-mode:both; }
+@keyframes creation-tile-in {
+  from { opacity:0; transform:translateY(36px) scale(.96); }
+  to { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes creation-tile-out {
+  to { opacity:0; transform:translateY(-24px) scale(.97); }
+}
+@media(prefers-reduced-motion:reduce) {
+  ::view-transition-group(.creation-tile),::view-transition-old(.creation-tile),::view-transition-new(.creation-tile) { animation-duration:0s; }
+}

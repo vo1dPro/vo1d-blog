@@ -1,6 +1,6 @@
 import type { CreationLayout } from "@/services/creations/model";
 import { animate, useReducedMotion } from "motion/react";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 
 const compactQuery = "(max-width: 1100px)";
 const subscribeCompact = (notify: () => void) => {
@@ -26,7 +26,8 @@ export default function CategoryScroller({
 }: Props) {
   const reducedMotion = useReducedMotion();
   const horizontal = useSyncExternalStore(subscribeCompact, getCompact, () => false);
-  const options = [{ id: "all", name: "全部" }, ...categories];
+  const options = [{ id: "all", name: "All" }, ...categories];
+  const labelKey = JSON.stringify(options.map(option => option.name));
   const selected = Math.max(
     0,
     options.findIndex((option) => option.id === value),
@@ -49,6 +50,41 @@ export default function CategoryScroller({
   const viewport = useRef<HTMLDivElement>(null);
   const controls = useRef<{ stop: () => void }[]>([]);
   const buttons = useRef(new Map<number, HTMLButtonElement>());
+
+  useLayoutEffect(() => {
+    const element = viewport.current;
+    if (!element || !horizontal) return;
+    const context = document.createElement("canvas").getContext("2d");
+    if (!context) return;
+    const labels: string[] = JSON.parse(labelKey);
+    let disposed = false;
+    const measure = () => {
+      if (disposed) return;
+      const button = element.querySelector("button");
+      if (!button) return;
+      element.style.removeProperty("--category-label-size");
+      const style = getComputedStyle(button);
+      context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      const textWidth = Math.max(...labels.map(label => context.measureText(label).width));
+      const available = Math.max(1, element.clientWidth * 0.76);
+      const baseStep = parseFloat(getComputedStyle(element.parentElement!).getPropertyValue("--category-step")) || 90;
+      const step = Math.min(available, Math.max(baseStep, Math.ceil(textWidth + 24)));
+      element.style.setProperty("--category-step", `${step}px`);
+      if (textWidth > step - 24) {
+        element.style.setProperty("--category-label-size", `${parseFloat(style.fontSize) * (step - 24) / textWidth}px`);
+      }
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    measure();
+    void document.fonts.ready.then(measure);
+    return () => {
+      disposed = true;
+      observer.disconnect();
+      element.style.removeProperty("--category-step");
+      element.style.removeProperty("--category-label-size");
+    };
+  }, [horizontal, labelKey]);
 
   useEffect(() => {
     const element = viewport.current;

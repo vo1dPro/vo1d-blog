@@ -3,6 +3,8 @@ declare module "three" {
   export const SRGBColorSpace: unknown;
 
   export const MathUtils: {
+    lerp(x: number, y: number, alpha: number): number;
+    smoothstep(x: number, min: number, max: number): number;
     clamp(value: number, min: number, max: number): number;
     degToRad(degrees: number): number;
     radToDeg(radians: number): number;
@@ -17,7 +19,14 @@ declare module "three" {
     set(x: number, y: number, z: number): this;
     setScalar(value: number): this;
     sub(vector: Vector3): this;
+    clone(): Vector3;
+    lerp(vector: Vector3, alpha: number): this;
+    addScaledVector(vector: Vector3, scale: number): this;
+    transformDirection(matrix: Matrix4): this;
   }
+  export class Matrix4 {}
+  export class Quaternion { identity(): this; }
+  export class Plane { constructor(normal: Vector3, constant: number); constant: number; }
 
   export class Euler {
     x: number;
@@ -25,6 +34,7 @@ declare module "three" {
     z: number;
     constructor(x?: number, y?: number, z?: number);
     copy(euler: Euler): this;
+    set(x: number, y: number, z: number): this;
   }
 
   export class Texture {
@@ -34,6 +44,9 @@ declare module "three" {
   export class BufferGeometry {
     dispose(): void;
   }
+  export class CubicBezierCurve3 { constructor(a: Vector3, b: Vector3, c: Vector3, d: Vector3); arcLengthDivisions: number; }
+  export class TubeGeometry extends BufferGeometry { constructor(curve: CubicBezierCurve3, segments: number, radius: number, radialSegments: number, closed: boolean); }
+  export class MeshStandardMaterial extends Material { constructor(parameters: {color: number; roughness: number}); }
 
   export class Material {
     [key: string]: unknown;
@@ -41,6 +54,14 @@ declare module "three" {
   }
 
   export class Object3D {
+    name: string;
+    parent: Object3D | null;
+    quaternion: Quaternion;
+    matrixWorld: Matrix4;
+    clone(recursive?: boolean): this;
+    getObjectByName(name: string): Object3D | undefined;
+    updateMatrixWorld(force?: boolean): void;
+    localToWorld(vector: Vector3): Vector3;
     position: Vector3;
     rotation: Euler;
     scale: Vector3;
@@ -49,13 +70,19 @@ declare module "three" {
   }
 
   export class Mesh extends Object3D {
+    constructor(geometry: BufferGeometry, material: Material);
     geometry: BufferGeometry;
     material: Material | Material[];
   }
 
   export class Group extends Object3D {}
 
-  export class Scene extends Object3D {}
+  export class Scene extends Object3D { environment: Texture; environmentIntensity: number; }
+  export class OrthographicCamera extends Object3D {
+    constructor(); left: number; right: number; top: number; bottom: number; near: number; far: number;
+    updateProjectionMatrix(): void;
+  }
+  export class PMREMGenerator { constructor(renderer: WebGLRenderer); fromScene(scene: Scene, sigma: number): {texture: Texture; dispose(): void}; dispose(): void; }
 
   export class Clock {
     getElapsedTime(): number;
@@ -69,6 +96,7 @@ declare module "three" {
   }
 
   export class WebGLRenderer {
+    localClippingEnabled: boolean;
     outputColorSpace: unknown;
     toneMapping: unknown;
     toneMappingExposure: number;
@@ -79,7 +107,7 @@ declare module "three" {
       powerPreference?: "default" | "high-performance" | "low-power";
     });
     dispose(): void;
-    render(scene: Scene, camera: PerspectiveCamera): void;
+    render(scene: Scene, camera: PerspectiveCamera | OrthographicCamera): void;
     setClearColor(color: number, alpha?: number): void;
     setPixelRatio(value: number): void;
     setSize(width: number, height: number, updateStyle?: boolean): void;
@@ -112,6 +140,7 @@ declare module "three/examples/jsm/loaders/GLTFLoader.js" {
   }
 
   export class GLTFLoader {
+    loadAsync(url: string): Promise<GLTF>;
     load(
       url: string,
       onLoad: (gltf: GLTF) => void,
@@ -119,4 +148,8 @@ declare module "three/examples/jsm/loaders/GLTFLoader.js" {
       onError?: ((error: unknown) => void) | undefined,
     ): void;
   }
+}
+declare module "three/examples/jsm/environments/RoomEnvironment.js" {
+  import { Scene } from 'three';
+  export class RoomEnvironment extends Scene { dispose(): void; }
 }

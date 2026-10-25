@@ -378,6 +378,7 @@ function FooterContent({ profile, socials }: { profile: SiteProfile; socials: So
             />
           </span>
         </div>
+        <a className="animated-footer__credits" href="/asset-credits.html">素材署名</a>
       </footer>
     </section>
   )

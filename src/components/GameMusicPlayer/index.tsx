@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, MouseEvent } from 'react'
 import {
   Gamepad2,
@@ -13,6 +13,7 @@ import { useSteamPresence } from '@/hooks/useSteamPresence'
 import DynamicIsland from './DynamicIsland'
 import { useLibraryDragScroll } from './useLibraryDragScroll'
 import './index.css'
+import ChargingCable from '../ChargingCable'
 
 const GlockModel = lazy(() => import('../GlockModel'))
 const XboxControllerModel = lazy(() => import('../XboxControllerModel'))
@@ -355,6 +356,11 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
   const [mode, setMode] = useState<PlayerMode>('cover')
   const [likedIds, setLikedIds] = useState<Set<number>>(new Set())
   const [screenAwake, setScreenAwake] = useState(false)
+  const [charging, setCharging] = useState(false)
+  const handleChargingChange = useCallback((connected: boolean) => {
+    setCharging(connected)
+    if (connected) setScreenAwake(true)
+  }, [])
   const [statusDate, setStatusDate] = useState(() => new Date())
   const [activePalette, setActivePalette] = useState<CoverPalette>(DEFAULT_PALETTE)
   const [previousPalette, setPreviousPalette] = useState<CoverPalette | null>(null)
@@ -364,6 +370,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
   const [modelsRequested, setModelsRequested] = useState(false)
   const [playerScale, setPlayerScale] = useState(1)
   const phoneFrameRef = useRef<HTMLDivElement | null>(null)
+  const chargePortRef = useRef<HTMLSpanElement | null>(null)
   const showcaseRef = useRef<HTMLDivElement | null>(null)
   const activePaletteRef = useRef(DEFAULT_PALETTE)
   const paletteFadeTimerRef = useRef<number | null>(null)
@@ -513,7 +520,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
   const previousPaletteStyle = previousPalette ? paletteToStyle(previousPalette) : undefined
 
   return (
-    <div ref={showcaseRef} className="game-showcase" aria-label="Game collection display">
+    <div id="games" ref={showcaseRef} className="game-showcase" aria-label="Game collection display">
       <div className="game-phone-stage">
         {shouldRenderModels && modelsRequested && (
           <Suspense fallback={null}>
@@ -550,7 +557,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
             <span className={`game-status-icons ${screenAwake && playingGame ? 'is-game-playing' : ''}`} aria-hidden="true">
               <AppleIcon name="cellular" className="apple-icon-cellular" />
               <AppleIcon name="wifi" className="apple-icon-wifi" />
-              <img className="game-status-battery" src="/images/apple-icons/power-full.png" alt="" />
+              <img className={`game-status-battery${charging ? ' is-charging' : ''}`} src={charging ? '/images/apple-icons/power-charging-v2.png' : '/images/apple-icons/power-full.png'} alt="" />
             </span>
           </div>
           <div className="game-home-indicator" aria-hidden="true" />
@@ -707,6 +714,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
             </div>
           </div>
           <MagicIphoneFrame />
+          <span ref={chargePortRef} className="game-charge-port" aria-hidden="true" />
           <button
             className="iphone-power-hotspot"
             type="button"
@@ -718,6 +726,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
           </button>
         </div>
       </div>
+      <ChargingCable phoneRef={phoneFrameRef} portRef={chargePortRef} onChargingChange={handleChargingChange} />
     </div>
   )
 }

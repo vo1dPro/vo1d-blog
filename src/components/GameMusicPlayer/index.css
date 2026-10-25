@@ -3,7 +3,7 @@
   isolation: isolate;
   display: block;
   min-height: clamp(620px, 82vh, 790px);
-  padding: clamp(18px, 4vw, 44px) 0 clamp(28px, 5vw, 60px);
+  padding: clamp(18px, 4vw, 44px) 0 100px;
   overflow: visible;
 }
 
@@ -898,6 +898,11 @@
   width: 24px;
   height: 14px;
   object-fit: contain;
+}
+
+/* Match the supplied images' visible silhouettes, including transparent margins. */
+.game-status-battery.is-charging {
+  transform: translateX(-1px) scale(.954);
 }
 
 .apple-icon-airplay {

@@ -371,3 +371,13 @@ html.dark .animated-footer__socials .social-icon--dark {
     will-change: auto;
   }
 }
+.animated-footer__credits {
+  position: absolute;
+  right: 24px;
+  bottom: 16px;
+  font-size: 11px;
+  color: var(--footer-fg);
+  opacity: .65;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

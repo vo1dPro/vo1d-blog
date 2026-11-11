@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, Play, MessageCircle, Repeat2, Heart, ChartNoAxes
 import type { Creation, CreationAuthor, CreationMedia, CreationPlatform } from '@/services/creations/model'
 import { creationPlatforms } from '@/services/creations/model'
 
-export function PlatformIcon({ platform }: { platform: CreationPlatform }) {
+function PlatformIcon({ platform }: { platform: CreationPlatform }) {
   if (platform !== 'x') return <span className="creation-platform-word">{creationPlatforms[platform].label}</span>
   return <svg className="creation-x" viewBox="0 0 24 24" aria-label="X" role="img" fill="currentColor">
     <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.64 7.584H.47l8.6-9.835L0 1.154h7.594l5.243 6.932 6.064-6.933Zm-1.29 19.461h2.039L6.487 3.24H4.3l13.312 17.374Z" />
@@ -36,7 +36,7 @@ function ProfileLink({ href, children, avatar = false }: { href?: string; childr
   return href ? <a className={`creation-profile-link ${avatar ? 'creation-avatar-link' : ''}`} href={href} target="_blank" rel="noopener noreferrer" aria-label={avatar ? '查看个人主页' : undefined} onClick={event => event.stopPropagation()}>{children}</a> : <>{children}</>
 }
 
-export function Author({ author, publishedAt, href }: { author: CreationAuthor; publishedAt?: string; href?: string }) {
+function Author({ author, publishedAt, href }: { author: CreationAuthor; publishedAt?: string; href?: string }) {
   const [now, setNow] = useState(Date.now)
   useEffect(() => {
     if (!publishedAt) return

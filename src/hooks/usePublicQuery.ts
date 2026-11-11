@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-export type QueryResult<T> =
+type QueryResult<T> =
   | { status: 'loading' }
   | { status: 'success'; data: T }
   | { status: 'error'; error: Error }

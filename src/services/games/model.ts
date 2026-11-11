@@ -1,6 +1,6 @@
 import type { Media, OrderedContent } from '../model'
 
-export interface SteamGame {
+interface SteamGame {
   appId: number
   name: string
   playtimeMinutes: number

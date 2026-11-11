@@ -132,7 +132,7 @@ const getSourceBounds = (
   }
 };
 
-export type AsciiArtProps = {
+type AsciiArtProps = {
   src: string;
   /** Number of ASCII columns (character resolution). Higher = more detail. */
   resolution?: number;
@@ -889,10 +889,4 @@ export const AsciiArt: React.FC<AsciiArtProps> = ({
       {canvasElement}
     </div>
   );
-};
-
-export const AsciiArtStatic: React.FC<
-  Omit<AsciiArtProps, "animated" | "animationStyle">
-> = (props) => {
-  return <AsciiArt {...props} animated={false} animationStyle="none" />;
 };

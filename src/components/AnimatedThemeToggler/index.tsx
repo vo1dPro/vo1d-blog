@@ -3,7 +3,7 @@ import { Moon, Sun } from "lucide-react"
 import { flushSync } from "react-dom"
 import { cn } from "@/lib/utils"
 
-export type TransitionVariant =
+type TransitionVariant =
   | "circle"
   | "square"
   | "diamond"

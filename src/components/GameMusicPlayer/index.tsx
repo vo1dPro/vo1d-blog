@@ -680,7 +680,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
           <div className="game-volume-area">
             <Volume size={19} fill="currentColor" strokeWidth={0} />
             <div className="game-slider">
-              <span style={{ width: `${game.likeLevel}%` }} />
+              <span style={{ width: `${(game.likeLevel / 5) * 100}%` }} />
             </div>
             <AppleIcon name="volume-high" />
           </div>

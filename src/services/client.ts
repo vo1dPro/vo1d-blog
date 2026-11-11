@@ -1,6 +1,6 @@
 import type { Page } from './model'
 
-export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3100').replace(/\/+$/, '')
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3100').replace(/\/+$/, '')
 
 export class ApiError extends Error {
   readonly status: number
@@ -43,13 +43,13 @@ export async function request<T>(path: string, signal: AbortSignal): Promise<T> 
   }
 }
 
-export function listPath(path: string, page = 1, filters: Record<string, string> = {}) {
+function listPath(path: string, page = 1, filters: Record<string, string> = {}) {
   const params = new URLSearchParams({ page: String(page), pageSize: '50' })
   for (const [key, value] of Object.entries(filters)) if (value !== '') params.set(key, value)
   return `${path}?${params}`
 }
 
-export function assertPage<T>(value: Page<T>): Page<T> {
+function assertPage<T>(value: Page<T>): Page<T> {
   if (!Array.isArray(value.items)
     || !Number.isInteger(value.page) || value.page < 1
     || !Number.isInteger(value.pageSize) || value.pageSize < 1 || value.pageSize > 50

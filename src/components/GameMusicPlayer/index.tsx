@@ -355,7 +355,7 @@ export default function GameMusicPlayer({ games: sourceGames }: GameMusicPlayerP
   const [currentIndex, setCurrentIndex] = useState(0)
   const [mode, setMode] = useState<PlayerMode>('cover')
   const [likedIds, setLikedIds] = useState<Set<number>>(new Set())
-  const [screenAwake, setScreenAwake] = useState(false)
+  const [screenAwake, setScreenAwake] = useState(true)
   const [charging, setCharging] = useState(false)
   const handleChargingChange = useCallback((connected: boolean) => {
     setCharging(connected)

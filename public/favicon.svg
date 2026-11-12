@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" role="img" aria-label="VO1D">
+  <style>
+    .bg { fill: #000 } .fg { fill: #fff }
+    @media (prefers-color-scheme: dark) { .bg { fill: #fff } .fg { fill: #000 } }
+  </style>
+  <rect class="bg" width="500" height="500" rx="112"/>
+  <g class="fg"><path d="M110 100H190A10 10 0 0 1 200 110V200.3H100V110A10 10 0 0 1 110 100ZM310 100H390A10 10 0 0 1 400 110V200.3H300V110A10 10 0 0 1 310 100ZM100 199.7H200V290A10 10 0 0 1 190 300H110A10 10 0 0 1 100 290V199.7ZM300 199.7H400V290A10 10 0 0 1 390 300H310A10 10 0 0 1 300 290V199.7ZM210 300H290A10 10 0 0 1 300 310V390A10 10 0 0 1 290 400H210A10 10 0 0 1 200 390V310A10 10 0 0 1 210 300Z"/></g>
+</svg>

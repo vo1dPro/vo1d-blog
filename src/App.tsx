@@ -12,6 +12,7 @@ import { useSiteContent } from './hooks/site-content-context'
 import QueryContent from './components/QueryContent'
 import OpeningSequence from './components/OpeningSequence'
 import NotFoundPage from './components/NotFoundPage'
+import CornerLogo from './components/CornerLogo'
 
 const menuItems = [
   { label: 'Home', ariaLabel: 'Go to home page', link: '/#home' },
@@ -40,8 +41,9 @@ function App() {
         <SmoothScroll />
         <SmoothCursor />
 
-        <div className="theme-toggle-shell fixed top-5 left-5 z-[60]">
+        <div className="theme-toggle-shell fixed top-5 left-5 z-[60] flex items-center gap-2">
           <AnimatedThemeToggler className="!text-white hover:!bg-white/10" />
+          <CornerLogo home={pathname === '/'} />
         </div>
 
         <StaggeredMenu

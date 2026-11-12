@@ -5,6 +5,7 @@ import { getSkills } from '@/services/skills'
 import { usePublicQuery } from '@/hooks/usePublicQuery'
 import { useSiteContent } from '@/hooks/site-content-context'
 import QueryContent from '../QueryContent'
+import SectionTitle from '../SectionTitle'
 
 function readDarkTheme() {
   const root = document.documentElement
@@ -35,6 +36,7 @@ export default function SkillsSection() {
   return (
     <section id="skills" className="relative scroll-mt-8 py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6">
+        <SectionTitle index="01" title="Skills" />
         <div className="grid items-center gap-10 md:grid-cols-2 lg:gap-16">
           <div className="flex justify-center">
             <QueryContent query={skills} label="skills" isEmpty={items => items.length === 0}>{items => <IconCloud

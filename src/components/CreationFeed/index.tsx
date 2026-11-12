@@ -1,3 +1,4 @@
+import SectionTitle from '../SectionTitle'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import type { CSSProperties, ReactNode } from 'react'
@@ -154,8 +155,7 @@ export default function CreationFeed() {
   const arranged = ordered.filter(post=>activeCategory==='all' || entries.get(key(post))?.categoryIds.includes(activeCategory))
   return <LayoutGroup id="creation-feed"><section id="blog" className="creation-section" aria-labelledby="creation-heading">
     <div className="creation-section-heading">
-      <h2 id="creation-heading">Blog</h2>
-      {query.status === 'success' && query.data.mode === 'preview' && <p>公开推文预览 · 尚未连接个人创作账号</p>}
+      <SectionTitle index="02" title="Blog" id="creation-heading" subtitle={query.status === 'success' && query.data.mode === 'preview' ? '公开推文预览 · 尚未连接个人创作账号' : undefined} />
     </div>
     <div ref={feedLayout} className={`creation-feed-layout${layout?.categories.length ? ' has-categories' : ''}`}>
     {!!layout?.categories.length && <CategoryScroller categories={layout.categories} value={activeCategory} onChange={changeCategory} />}

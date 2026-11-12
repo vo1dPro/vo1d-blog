@@ -1,4 +1,4 @@
-import { motion, useSpring } from "motion/react";
+import { motion, useMotionValue, useSpring } from "motion/react";
 import type { FC } from "react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -127,8 +127,9 @@ export function SmoothCursor({
     return () => observer.disconnect();
   }, []);
 
-  const cursorX = useSpring(0, springConfig);
-  const cursorY = useSpring(0, springConfig);
+  // Position tracks the pointer exactly; only rotation and scale are eased.
+  const cursorX = useMotionValue(0);
+  const cursorY = useMotionValue(0);
   const rotation = useSpring(0, {
     ...springConfig,
     damping: 60,
@@ -250,9 +251,6 @@ export function SmoothCursor({
         velocity.current.x ** 2 + velocity.current.y ** 2,
       );
 
-      cursorX.set(currentPos.x);
-      cursorY.set(currentPos.y);
-
       if (speed > 0.1) {
         const currentAngle =
           Math.atan2(velocity.current.y, velocity.current.x) * (180 / Math.PI) +
@@ -275,6 +273,9 @@ export function SmoothCursor({
     let rafId = 0;
     const throttledPointerMove = (e: PointerEvent) => {
       if (!isTrackablePointer(e.pointerType)) return;
+      // Move at once, outside the frame throttle, so the cursor never trails the pointer.
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
       if (rafId) return;
       rafId = requestAnimationFrame(() => {
         smoothPointerMove(e);

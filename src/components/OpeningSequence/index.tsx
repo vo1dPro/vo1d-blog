@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import NumberTicker from '../NumberTicker'
+import { WORD_ROWS, wordBlocks, wordColumns, wordViewBox } from '@/lib/pixel-glyphs'
 import './index.css'
 
 // Choreographed milestones give resources time to load; they are not byte counts.
@@ -19,6 +20,15 @@ const PROGRESS_STEPS = [
 const TICKER_SPRING = { damping: 40, stiffness: 400 }
 const OPENING_SEEN_KEY = 'vo1d-blog:opening-seen'
 let openingCompleted = false
+
+const LOGO_BLOCKS = wordBlocks('VO1D')
+const LOGO_VIEW_BOX = wordViewBox('VO1D')
+const LOGO_COLUMNS = wordColumns(4)
+// Blocks light up roughly left to right, with enough jitter to feel like pixels loading in.
+const LIGHT_ORDER = LOGO_BLOCKS
+  .map((block, index) => ({ index, key: block.letter * 3 + block.col + Math.random() * 2.5 }))
+  .sort((a, b) => a.key - b.key)
+  .reduce<number[]>((rank, entry, position) => { rank[entry.index] = position; return rank }, [])
 
 function hasSeenOpening() {
   try {
@@ -42,20 +52,54 @@ export default function OpeningSequence({ children }: { children: ReactNode }) {
   const rootRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
-  const barRef = useRef<HTMLDivElement>(null)
-  const fillRef = useRef<HTMLDivElement>(null)
   const numberRef = useRef<HTMLDivElement>(null)
+  const logoRef = useRef<SVGSVGElement>(null)
   const exitingRef = useRef(false)
   const [progress, setProgress] = useState(0)
   const [skipOpening] = useState(hasSeenOpening)
   const [complete, setComplete] = useState(skipOpening)
   const [reducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
 
-  const syncProgressBar = useCallback((value: number) => {
-    if (fillRef.current && !exitingRef.current) {
-      fillRef.current.style.transform = `scaleY(${Math.min(100, Math.max(0, value)) / 100})`
-    }
+  // Progress lights the wordmark block by block, so the loader ends as the finished logo.
+  const lightLogo = useCallback((value: number) => {
+    const lit = Math.round((Math.min(100, Math.max(0, value)) / 100) * LOGO_BLOCKS.length)
+    logoRef.current?.querySelectorAll<SVGPathElement>('path').forEach((path, index) => {
+      path.dataset.lit = String(LIGHT_ORDER[index] < lit)
+    })
   }, [])
+
+  const syncProgress = useCallback((value: number) => {
+    if (!exitingRef.current) lightLogo(value)
+  }, [lightLogo])
+
+  // Sit the loader's wordmark exactly where the hero canvas will paint it.
+  useLayoutEffect(() => {
+    if (skipOpening) return
+    const place = () => {
+      const logo = logoRef.current
+      const box = contentRef.current?.querySelector('.hero__logo')?.getBoundingClientRect()
+      if (!logo || !box) return
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const cell = Math.max(2, Math.floor((box.width * dpr) / LOGO_COLUMNS))
+      const width = cell * LOGO_COLUMNS
+      const height = cell * WORD_ROWS
+      logo.style.left = `${Math.round(box.left * dpr + (box.width * dpr - width) / 2) / dpr}px`
+      logo.style.top = `${Math.round(box.top * dpr + (box.height * dpr - height) / 2) / dpr}px`
+      logo.style.width = `${width / dpr}px`
+      logo.style.height = `${height / dpr}px`
+      logo.style.transform = 'none'
+      // The counter hangs centred beneath the wordmark.
+      overlayRef.current?.style.setProperty('--opening-logo-bottom', `${(Math.round(box.top * dpr + (box.height * dpr - height) / 2) + height) / dpr}px`)
+    }
+    place()
+    const observer = new ResizeObserver(place)
+    if (contentRef.current) observer.observe(contentRef.current)
+    window.addEventListener('resize', place)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', place)
+    }
+  }, [skipOpening])
 
   useEffect(() => {
     if (skipOpening) return
@@ -86,43 +130,32 @@ export default function OpeningSequence({ children }: { children: ReactNode }) {
       for (const step of PROGRESS_STEPS.slice(1)) {
         timeline.call(() => setProgress(step.value), [], step.at)
         if (reducedMotion) {
-          timeline.set(fillRef.current, { scaleY: step.value / 100 }, step.at)
+          timeline.call(() => lightLogo(step.value), [], step.at)
         }
       }
 
       timeline.addLabel('exit', 4.05)
-      timeline.call(() => { exitingRef.current = true }, [], 'exit')
-      timeline.to(fillRef.current, { scaleY: 1, duration: 0.15 }, 'exit')
-      timeline.to(barRef.current, {
-        yPercent: reducedMotion ? 0 : -105,
-        opacity: reducedMotion ? 0 : 1,
-        duration: 0.65,
-        ease: 'power3.in',
-      }, 'exit+=0.1')
+      timeline.call(() => {
+        exitingRef.current = true
+        lightLogo(100)
+      }, [], 'exit')
       timeline.to(numberRef.current, {
         y: reducedMotion ? 0 : -24,
         opacity: 0,
         duration: 0.35,
       }, 'exit+=0.25')
-      timeline.to(overlayRef.current, { opacity: 0, duration: 0.55 }, 'exit+=0.55')
-      timeline.fromTo(contentRef.current, {
-        y: reducedMotion ? 0 : 88,
-        opacity: 0,
-      }, {
-        y: 0,
-        opacity: 1,
-        duration: 0.85,
-        ease: 'power3.out',
-        // A persistent transform would change the containing block of fixed controls.
-        clearProps: 'transform,opacity',
-      }, 'exit+=0.4')
+      // The page takes over with its wordmark already assembled under the loader's copy,
+      // so the logo never moves while the screen dissolves around it.
+      timeline.call(() => { document.documentElement.dataset.openingHandoff = '1' }, [], 'exit+=0.35')
+      timeline.set(contentRef.current, { opacity: 1 }, 'exit+=0.5')
+      timeline.to(overlayRef.current, { opacity: 0, duration: 0.7, ease: 'power2.inOut' }, 'exit+=0.55')
     }, rootRef)
 
     return () => {
       context.revert()
       restoreScrolling()
     }
-  }, [reducedMotion, skipOpening])
+  }, [lightLogo, reducedMotion, skipOpening])
 
   return (
     <div ref={rootRef} className="opening-sequence" data-complete={complete}>
@@ -138,13 +171,13 @@ export default function OpeningSequence({ children }: { children: ReactNode }) {
                 value={progress}
                 minimumIntegerDigits={2}
                 springOptions={TICKER_SPRING}
-                onValueChange={syncProgressBar}
+                onValueChange={syncProgress}
               />
             )}
           </div>
-          <div ref={barRef} className="opening-bar" aria-hidden="true">
-            <div ref={fillRef} className="opening-bar-fill" />
-          </div>
+          <svg ref={logoRef} className="opening-logo" viewBox={LOGO_VIEW_BOX} aria-hidden="true">
+            {LOGO_BLOCKS.map(block => <path key={`${block.letter}-${block.col}-${block.row}`} d={block.path} data-lit="false" />)}
+          </svg>
         </div>
       )}
     </div>

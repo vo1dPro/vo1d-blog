@@ -1,74 +1,60 @@
-import { ArrowDown, Sparkles } from 'lucide-react'
+import { useRef, type CSSProperties } from 'react'
 import { useSiteContent } from '@/hooks/site-content-context'
+import { usePixelField } from '@/hooks/usePixelField'
 import QueryContent from '../QueryContent'
+import './index.css'
 
 export default function HeroSection() {
   const { profile } = useSiteContent()
-  function scrollToSkills() {
-    document.querySelector('#skills')?.scrollIntoView({ behavior: 'smooth' })
-  }
+  const sectionRef = useRef<HTMLElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const logoRef = useRef<HTMLDivElement>(null)
+  const phase = usePixelField({ text: 'VO1D', sectionRef, canvasRef, anchorRef: logoRef })
 
-  function scrollToBlog() {
-    document.querySelector('#blog')?.scrollIntoView({ behavior: 'smooth' })
+  function scrollTo(selector: string) {
+    document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
-    <section
-      id="home"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
-    >
-      <div className="relative z-10 text-center px-6 max-w-3xl mx-auto">
-        <QueryContent query={profile} label="site profile">{data => <>
-        {/* Avatar placeholder */}
-        <div
-          className="mx-auto mb-8 w-28 h-28 rounded-full bg-foreground/5 backdrop-blur-xl border border-foreground/10 dark:bg-white/[0.08] dark:border-white/[0.12] flex items-center justify-center shadow-lg shadow-black/20"
-        >
-          {data.avatar ? <img src={data.avatar.url} alt={data.displayName} className="h-full w-full rounded-full object-cover" /> : <Sparkles size={40} className="text-muted-foreground" />}
+    <section ref={sectionRef} id="home" className="hero" data-ready={phase !== 'idle'} data-assembled={phase === 'assembled'}>
+      <canvas ref={canvasRef} className="hero__canvas" aria-hidden="true" />
+
+      <div className="hero__inner">
+        <div ref={logoRef} className="hero__logo" aria-hidden="true" />
+
+        <div className="hero__copy">
+          <QueryContent query={profile} label="site profile">{data => <>
+            <h1 className="sr-only">{data.heroTitlePrefix} {data.displayName}</h1>
+            <p className="hero__meta hero__reveal" style={{ '--hero-delay': '1.05s' } as CSSProperties}>
+              {data.avatar && <img src={data.avatar.url} alt="" className="hero__avatar" />}
+              <span>{data.displayName}</span>
+              <span className="hero__meta-divider" aria-hidden="true" />
+              <span>{data.role}</span>
+            </p>
+            <p className="hero__description hero__reveal" style={{ '--hero-delay': '1.2s' } as CSSProperties}>
+              {data.heroDescription}
+            </p>
+          </>}</QueryContent>
         </div>
 
-        <h1
-          className="text-5xl md:text-7xl font-bold text-foreground tracking-tight leading-tight"
-        >
-          {data.heroTitlePrefix}{' '}
-          <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            {data.displayName}
-          </span>
-        </h1>
-
-        <p className="mt-6 text-xl md:text-2xl text-muted-foreground leading-relaxed">
-          {data.heroDescription.includes(',') ? <>
-            {data.heroDescription.slice(0, data.heroDescription.indexOf(',') + 1)}<br className="hidden md:block" />
-            {data.heroDescription.slice(data.heroDescription.indexOf(',') + 1)}
-          </> : data.heroDescription}
-        </p>
-        </>}</QueryContent>
-
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="hero__actions hero__reveal" style={{ '--hero-delay': '1.35s' } as CSSProperties}>
           <a
             href="#blog"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-foreground/10 backdrop-blur-xl text-foreground dark:bg-white/[0.12] dark:text-white rounded-full text-sm font-medium border dark:border-white/[0.15] border-foreground/10 hover:bg-white/[0.18] transition-all duration-300 shadow-lg shadow-black/10"
-            onClick={(e) => { e.preventDefault(); scrollToBlog() }}
+            className="hero__button hero__button--solid"
+            onClick={(event) => { event.preventDefault(); scrollTo('#blog') }}
           >
             Read Blog
           </a>
           <a
             href="#skills"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-foreground/5 backdrop-blur-xl text-foreground dark:bg-white/[0.05] dark:text-white rounded-full text-sm font-medium border dark:border-white/[0.1] border-foreground/10 hover:bg-white/[0.1] hover:border-white/[0.18] transition-all duration-300"
-            onClick={(e) => { e.preventDefault(); scrollToSkills() }}
+            className="hero__button"
+            onClick={(event) => { event.preventDefault(); scrollTo('#skills') }}
           >
             Explore Skills
           </a>
         </div>
-
-        {/* Scroll indicator */}
-        <button
-          className="mt-16 animate-bounce text-muted-foreground hover:text-foreground transition-colors"
-          onClick={scrollToSkills}
-          aria-label="Scroll down"
-        >
-          <ArrowDown size={24} />
-        </button>
       </div>
+
     </section>
   )
 }

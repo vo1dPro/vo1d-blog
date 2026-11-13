@@ -8,7 +8,7 @@ React、TypeScript、Vite 博客展示端。目录 vo1d-blog，后端与管理�
 
 已接入站点资料、创作动态、书籍、游戏、照片、技能和社交链接。需要完整列表时遍历所有接口页；任何后续页失败或数量不一致都显示错误。Blog 模块使用 Magic UI 风格的创作卡片和错落布局，点击打开站内详情弹窗。
 
-公开请求使用 VITE_API_BASE_URL（默认 http://localhost:3100）、根路径、cache: no-store，不携带管理员 Cookie。刷新页面读取后台最新公开内容；没有静态业务数据回退。站点资料和社交查询共享。
+公开请求使用 VITE_API_BASE_URL（默认 http://localhost:3100）、根路径、cache: no-cache，不携带管理员 Cookie。每次请求都向后端重新验证：内容没变时后端凭 ETag 返回 304，有变化时返回新内容，所以刷新页面总能读到后台的最新公开内容。没有静态业务数据回退。站点资料和社交查询共享。
 
 旧文章展示组件和 /blog/* 详情路由已移除，旧链接显示 404；文章、分类、标签的接口和后台管理也已移除，数据库历史数据保留。创作动态的导入、删除和平台扩展见 [CREATIONS.md](./CREATIONS.md)。
 
@@ -24,14 +24,8 @@ React、TypeScript、Vite 博客展示端。目录 vo1d-blog，后端与管理�
 
 Vite 出现 504 Outdated Optimize Dep 时，先停止旧服务，再运行 pnpm dev --force 重新生成依赖缓存。
 
-验证命令：pnpm lint、pnpm build。浏览器验收由管理后台 tests/e2e 承载，见 [当前验收](../vo1d-blog-admin/docs/current-integration.md)。
+验证命令：pnpm lint、pnpm build。浏览器验收由管理后台 tests/e2e 承载，三个项目的启动和验证方式见 [使用说明](../vo1d-blog-admin/docs/usage-guide.md)。
 
 ## 静态资源归档
 
-已移除 src/data 下六个静态文件和 115 个业务/冗余图片图标文件。原组件内业务文案也已存档。
-
-归档目录：系统桌面目录下的 `博客联动备份-20260908-001721`。
-
-static-data-before.zip 保存原目录结构；static-manifest.json 保存源文件大小及 SHA-256；removed-media.json 列出删除的媒体。压缩包中的 134 个数据/图片文件已逐项校验，装饰图标和页脚图片仍保留在前端。source-before.zip 另保存实施前的三项目源码。
-
-归档用于恢复及显式迁移，博客运行不依赖它。后端导入检查与迁移测试必须显式指定解压源，不能使用当前博客的 src/data。
+接入后端时，src/data 下的静态业务数据和对应图片已从仓库移除，改由后端提供。装饰图标、页脚图片和三维模型仍保留在前端。移除前的原始文件另行归档在仓库之外，博客运行不依赖它；历史验收细节见 [2026-09-08 联动记录](../vo1d-blog-admin/docs/archive/2026-09-08-integration.md)。

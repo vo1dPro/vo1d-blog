@@ -22,8 +22,8 @@ export async function request<T>(path: string, signal: AbortSignal): Promise<T> 
     response = await fetch(`${API_BASE_URL}${path}`, {
       headers: { Accept: 'application/json' },
       credentials: 'omit',
-      // A visitor refresh must observe edits and publication changes immediately.
-      cache: 'no-store',
+      // Always revalidate, so a refresh shows edits at once; the API's ETag turns an unchanged list into a 304.
+      cache: 'no-cache',
       signal: AbortSignal.any([signal, AbortSignal.timeout(15000)]),
     })
   } catch (error) {
